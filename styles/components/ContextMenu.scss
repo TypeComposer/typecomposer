@@ -1,0 +1,25 @@
+.tc-context-menu {
+  position: fixed;
+  z-index: 1300;
+  width: 200px;
+  background-color: #1b1a1a;
+}
+
+.tc-context-menu .tc-context-menu-item {
+  padding: 8px 10px;
+  font-size: 15px;
+  color: #eee;
+}
+
+.tc-context-menu .tc-context-menu-item:hover {
+  background-color: #555;
+}
+
+.tc-context-menu .tc-context-menu-item div {
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.tc-context-menu .hr {
+  background-color: #555;
+}

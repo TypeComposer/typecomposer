@@ -1,0 +1,178 @@
+// import {
+//   ElementType,
+//   Component,
+//   DivElement,
+//   ButtonElement,
+//   SelectElement,
+//   TableElement,
+//   TableElementType,
+//   LabelElement,
+//   SpanElement,
+// } from "../..";
+
+
+// export class TablePagination extends Component {
+//   static readonly TAG: string = "tc-table-pagination";
+//   // Total de itens (pode vir de API, props, etc.)
+//   private totalItems: number = 15;
+
+//   // Estado interno
+//   private currentPage: number = 1;
+//   private rowsPerPage: number = 10;
+
+//   // Referências para atualização
+//   private pageInfoText!: SpanElement;
+//   private prevButton!: ButtonElement;
+//   private nextButton!: ButtonElement;
+//   private rowsSelect!: SelectElement;
+
+//   constructor(props?: ElementType & {
+//     totalItems?: number,
+//     currentPage?: number,
+//     rowsPerPage?: number,
+//     options?: number[],
+//   }) {
+//     super(props);
+//     this.addClassName("table-pagination"); // adiciona a classe principal
+
+//     // Container principal
+//     const container = new DivElement({ className: "pagination-container" });
+
+//     // --- Seção "Rows per page"
+//     const rowsPerPageContainer = new DivElement({ className: "rows-per-page" });
+
+//     const label = new LabelElement({ for: "rowsSelect", text: "Rows per page:" });
+
+
+//     this.rowsSelect = new SelectElement({ id: "rowsSelect" });
+//     const options = props?.options || [5, 10, 15];
+
+//     for (let i = 0; i < options.length; i++) {
+//       const option = new Option(options[i].toString(), options[i].toString());
+//       if (options[i] === props?.rowsPerPage) {
+//         option.selected = true;
+//       }
+//       this.rowsSelect.appendChild(option);
+//     }
+
+//     rowsPerPageContainer.appendChild(label);
+//     rowsPerPageContainer.appendChild(this.rowsSelect);
+//     const pageInfoContainer = new DivElement({ className: "page-info" });
+//     this.pageInfoText = new SpanElement();
+//     pageInfoContainer.append(this.pageInfoText);
+
+//     // --- Botões de navegação
+//     const navContainer = new DivElement({ className: "navigation-buttons" });
+//     this.prevButton = new ButtonElement({ text: "◀", id: "prevBtn" });
+//     this.nextButton = new ButtonElement({ text: "▶", id: "nextBtn" });
+
+//     navContainer.appendChild(this.prevButton);
+//     navContainer.appendChild(this.nextButton);
+
+//     // --- Monta tudo no container principal
+//     container.appendChild(rowsPerPageContainer);
+//     container.appendChild(pageInfoContainer);
+//     container.appendChild(navContainer);
+
+//     // Anexa ao componente
+//     this.appendChild(container);
+
+//     // Eventos
+//     this.prevButton.onclick = () => this.onPrevClick();
+//     this.nextButton.onclick = () => this.onNextClick();
+//     this.rowsSelect.onchange = (event) => this.onRowsChange(event);
+//     // Inicializa a informação de página
+//     this.updatePageInfo();
+//   }
+
+//   maxItems(value: number) {
+//     this.totalItems = value;
+//     this.updatePageInfo();
+//   }
+
+//   // Lógica de mudança de página anterior
+//   private onPrevClick() {
+//     if (this.currentPage > 1) {
+//       this.currentPage--;
+//       this.updatePageInfo();
+//     }
+//   }
+
+//   // Lógica de mudança de página seguinte
+//   private onNextClick() {
+//     if (this.currentPage * this.rowsPerPage < this.totalItems) {
+//       this.currentPage++;
+//       this.updatePageInfo();
+//     }
+//   }
+
+//   // Lógica de troca de número de linhas por página
+//   private onRowsChange(event: any) {
+//     const newRowsPerPage = parseInt(event.target.value, 10);
+//     this.rowsPerPage = newRowsPerPage;
+//     this.currentPage = 1; // ao mudar, volta para página 1
+//     this.updatePageInfo();
+//   }
+
+//   // Atualiza o texto "1-10 of 15" e habilita/desabilita botões
+//   private updatePageInfo() {
+//     const start = (this.currentPage - 1) * this.rowsPerPage + 1;
+//     const end = Math.min(this.currentPage * this.rowsPerPage, this.totalItems);
+
+//     // Exemplo: "1-10 of 15"
+//     this.pageInfoText.innerText = `${start}-${end} of ${this.totalItems}`;
+
+//     // Habilitar/desabilitar botões
+//     if (this.currentPage === 1) {
+//       this.prevButton.setAttribute("disabled", "true");
+//     } else {
+//       this.prevButton.removeAttribute("disabled");
+//     }
+
+//     if (this.currentPage * this.rowsPerPage >= this.totalItems) {
+//       this.nextButton.setAttribute("disabled", "true");
+//     } else {
+//       this.nextButton.removeAttribute("disabled");
+//     }
+//   }
+// }
+
+
+// TypeComposer.defineElement(TablePagination.TAG, TablePagination);
+
+// export class TablePanel<T = any> extends Component {
+//   static readonly TAG: string = "tc-table-panel";
+//   readonly table: TableElement = new TableElement();
+//   #pagination?: TablePagination;
+
+//   constructor(
+//     props?: ElementType & {
+//       tableProps?: TableElementType,
+//       stickyHeader?: boolean,
+//       pagination?: boolean,
+//       paginationProps?: ElementType,
+//     },
+//   ) {
+//     super({ ...props });
+//     this.addClassName("table-panel");
+//     if (props?.stickyHeader) {
+//       this.addClassName("sticky-header");
+//     }
+//     this.table = this.appendChild(new TableElement(props?.tableProps));
+//     if (props?.pagination) {
+//       this.#pagination = new TablePagination(props?.paginationProps);
+//       this.#pagination.maxItems(this.table.values.length);
+//       this.appendChild(this.#pagination);
+//       this.table.onUpdateValues = (values) => {
+//         this.#pagination?.maxItems(values.length);
+//       }
+//     }
+//   }
+
+//   get pagination(): TablePagination | undefined {
+//     return this.#pagination;
+//   }
+
+// }
+
+// TypeComposer.defineElement(TablePanel.TAG, TablePanel);

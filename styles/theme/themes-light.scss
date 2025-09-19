@@ -1,0 +1,29 @@
+[data-theme="light"] {
+  --primary-background-color: linear-gradient(45deg, #7175da, #9790f2);
+  --primary-surface: rgba(155, 151, 151, 0.324);
+  --primary-color: #ffffff; // Cor de fundo preta
+  --segundary-color: #f9f9f9; // Cor de fundo branca
+  --primary-color-button: #4caf50; /* Green */
+  --primary-color-button-hover: #3e8e41;
+  --primary-color-text: #ffffff;
+  --primary-select-color: solid rgb(105, 108, 255);
+  --primary-text-color: rgba(50, 71, 92, 0.6);
+  --primary-text-color-hover: rgba(50, 71, 92, 0.8);
+  --primary-text-color-active: rgba(50, 71, 92, 1);
+  --primary-text-color-disabled: rgba(50, 71, 92, 0.4);
+  --primary-text-color-placeholder: rgba(50, 71, 92, 0.4);
+  --primary-text-color-icon: rgba(50, 71, 92, 0.6);
+  --primary-text-color-icon-hover: rgba(50, 71, 92, 0.8);
+  --primary-border-color: solid lightgray;
+
+  --v-input-control-height: 56px;
+  --v-field-padding-bottom: 5px;
+  --v-field-padding-start: 16px;
+  --v-field-padding-end: 16px;
+  --v-field-padding-top: 10px;
+  --v-field-padding-bottom: 5px;
+  --v-field-input-padding-top: calc(var(--v-field-padding-top, 10px) + var(--v-input-padding-top, 0));
+  --v-field-input-padding-bottom: var(--v-field-padding-bottom, 5px);
+  --v-input-chips-margin-top: 2px;
+  --v-scrollbar-offset: inherit;
+}

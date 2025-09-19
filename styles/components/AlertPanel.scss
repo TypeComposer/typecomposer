@@ -1,0 +1,128 @@
+#alert-system {
+  display: flex;
+  position: fixed;
+  z-index: 1300;
+  inset: 0px;
+  background-color: transparent;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 10px;
+  overflow: hidden;
+  pointer-events: none;
+  flex-direction: column;
+  .alert {
+    display: flex;
+    padding: 6px 16px;
+    font-size: 0.875rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.43;
+    border-radius: 4px;
+    letter-spacing: 0.01071em;
+    background-color: transparent;
+    pointer-events: all;
+    color: #fff;
+    font-weight: 500;
+  }
+
+  .outlined-error {
+    color: rgb(250, 179, 174);
+    border: 1px solid #f44336;
+  }
+
+  .outlined-warning {
+    color: rgb(255, 213, 153);
+    border: 1px solid #ff9800;
+  }
+
+  .outlined-info {
+    color: rgb(166, 213, 250);
+    border: 1px solid #2196f3;
+  }
+
+  .outlined-success {
+    color: rgb(183, 223, 185);
+    border: 1px solid #4caf50;
+  }
+
+  .icon-outlined-error {
+    color: #f44336;
+  }
+
+  .icon-outlined-warning {
+    color: #ff9800;
+  }
+
+  .icon-outlined-info {
+    color: #2196f3;
+  }
+
+  .icon-outlined-success {
+    color: #4caf50;
+  }
+
+  .icon-filled-error {
+    color: #fff;
+  }
+
+  .icon-filled-warning {
+    color: #fff;
+  }
+
+  .icon-filled-info {
+    color: #fff;
+  }
+
+  .icon-filled-success {
+    color: #fff;
+  }
+
+  .icon {
+    display: flex;
+    opacity: 0.9;
+    padding: 7px 0;
+    font-size: 22px;
+    margin-right: 12px;
+    svg {
+      font-size: inherit;
+      fill: currentColor;
+      width: 1em;
+      height: 1em;
+      display: inline-block;
+      font-size: 1.5rem;
+      transition: fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+      flex-shrink: 0;
+      user-select: none;
+    }
+  }
+
+  .filled-info {
+    background-color: #2196f3;
+  }
+
+  .filled-error {
+    background-color: #f44336;
+  }
+
+  .filled-success {
+    background-color: #4caf50;
+  }
+
+  .filled-warning {
+    background-color: #ff9800;
+  }
+
+  .close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+    span {
+      cursor: pointer;
+    }
+    span:hover {
+      transform: scale(1.1);
+    }
+  }
+}

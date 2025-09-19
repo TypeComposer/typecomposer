@@ -1,0 +1,42 @@
+.tc-tooltip {
+	position: relative;
+	display: inline-block;
+	border-bottom: 1px dotted black;
+}
+  
+.tc-tooltip .tc-tooltiptext {
+	visibility: hidden;
+	width: 120px;
+	background-color: black;
+	color: #fff;
+	text-align: center;
+	padding: 5px 0;
+	border-radius: 6px;
+
+	position: absolute;
+	z-index: 1;
+}
+
+.tc-tooltip:hover .tc-tooltiptext {
+	visibility: visible;
+}
+
+.tc-tooltip .tc-tooltiptext-right {
+	top: -5px;
+	left: 105%;
+}
+
+.tc-tooltip .tc-tooltiptext-left {
+	top: -5px;
+	right: 105%;
+}
+
+.tc-tooltip .tc-tooltiptext-bottom {
+	top: 105%;
+	left: 50%;
+}
+
+.tc-tooltip .tc-tooltiptext-top {
+	bottom: 105%;
+	left: 50%;
+}
