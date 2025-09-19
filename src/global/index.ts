@@ -1,4 +1,6 @@
 import "./safari-polyfill";
+import { EventComponent, EventHandler } from "../core/event";
+import { ElementType, computed, InputElement, ref, RefBoolean, refBoolean, RefList, RefMap, RefNumber, RefSet, RefString, refString, StyleProperties } from "../";
 
 function deepCopy<T>(obj: T, cache = new WeakMap()): T {
   // @ts-ignore
@@ -40,9 +42,6 @@ function deepCopy<T>(obj: T, cache = new WeakMap()): T {
 }
 
 (globalThis as any).deepCopy = deepCopy;
-import { EventComponent, EventHandler } from "../core/event";
-import { ElementType, computed, InputElement, ref, RefBoolean, refBoolean, RefList, RefMap, RefNumber, RefSet, RefString, refString, StyleProperties } from "../";
-
 // // safari-polyfill
 // if (/^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent) || /iP(hone|od|ad)/.test(navigator.userAgent)) {
 //   const { keys: e } = Object,

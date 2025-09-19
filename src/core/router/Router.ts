@@ -1,3 +1,4 @@
+import { Url } from "url";
 import { App, DivElement, RouteView, AsyncComponentLoader } from "../../";
 import { GuardResponse, RouterGuard } from "./RouterGuard";
 
@@ -21,26 +22,22 @@ interface RoutePageBuild extends RoutePage {
 
 interface RouteOutput {
   path: string;
-  routers: { component?: any; path: string, guard?: RouterGuard, redirect?: string, title?: string }[];
+  isChild: boolean;
+  routers: { component?: any; path: string; guard?: RouterGuard; redirect?: string; title?: string }[];
 }
 
-function getRoutePairs(
-  routes: RoutePage[],
-  basePath = '',
-  parentRouters: { component: any; path: string, guard?: RouterGuard }[] = []
-): RouteOutput[] {
+function getRoutePairs(routes: RoutePage[], basePath = "", parentRouters: { component: any; path: string; guard?: RouterGuard }[] = []): RouteOutput[] {
   let result: RouteOutput[] = [];
 
   for (const route of routes) {
-    const fullPath = `${basePath}/${route.path}`.replace(/\/+/g, '/');
+    const fullPath = `${basePath}${route.path ? `/${route.path}` : ""}`.replace(/\/+/g, "/");
 
     const routers = [...parentRouters];
     if (route.component || route.redirect) {
       // @ts-ignore
       routers.push({ component: route.component, path: route.path, id: route.id, guard: route.guard, redirect: route.redirect, title: route.title });
     }
-
-    result.push({ path: fullPath, routers });
+    result.push({ path: fullPath, routers, isChild: route["isChild"] });
 
     if (route.children) {
       result = result.concat(getRoutePairs(route.children, fullPath, routers));
@@ -50,7 +47,6 @@ function getRoutePairs(
   return result;
 }
 
-
 interface RouteMatch {
   url: string;
   path: string;
@@ -58,52 +54,61 @@ interface RouteMatch {
   params: Record<string, string>;
 }
 
-function matchRoute(url: string, routes: RouteOutput[]): RouteMatch | null {
-  let bestMatch: RouteMatch | null = null;
-  for (const route of routes) {
-    const routeRegex = new RegExp(
-      `^${route.path
-        .replace(/\*\*/g, '.*')
-        .replace(/\*/g, '[^/]+')
-        .replace(/:[^\s/]+/g, '([^/]+)')}$`
-    );
-    const match = url.match(routeRegex);
-
-
-    if (match || route.path === `/${Router.PATH_WILDCARD}`) {
-      const params: Record<string, string> = {};
-      const paramKeys = route.path.match(/:[^\s/]+/g);
-
-      if (paramKeys) {
-        paramKeys.forEach((key, index) => {
-          params[key.replace(':', '')] = match[index + 1];
-        });
-      }
-
-      if (!bestMatch || route.path.length > bestMatch.path.length) {
-        bestMatch = {
-          path: route.path,
-          // @ts-ignore
-          routers: route.routers.map((route) => {
-            // @ts-ignore
-            return { component: route.component, path: route.path, id: route.id, guard: route.guard, title: route.title, redirect: route.redirect, build: undefined }
-          }),
-          params,
-        };
-      }
-    }
-  }
-  if (bestMatch) bestMatch.url = url;
-  return bestMatch;
+function validateRoutePattern(route: RouteOutput, urlPath: string): boolean {
+  if (route.isChild) return false;
+  const routePattern: string = route.path;
+  if (routePattern === "/**") return true;
+  const routeSegments = routePattern.split("/").filter(Boolean);
+  const urlSegments = urlPath.split("/").filter(Boolean);
+  if (routeSegments.length !== urlSegments.length) return false;
+  return routeSegments.every((seg, idx) => seg.startsWith(":") || seg === "*" || seg === urlSegments[idx]);
 }
 
+function getRouterParams(route: RouteOutput, url: URL): Record<string, string> {
+  const params: Record<string, string> = {};
+  const routeSegments = route.path.split("/").filter(Boolean);
+  const urlSegments = url.pathname.split("/").filter(Boolean);
+  for (let i = 0; i < routeSegments.length; i++) {
+    const seg = routeSegments[i];
+    if (seg.startsWith(":")) {
+      const paramName = seg.slice(1);
+      params[paramName] = urlSegments[i];
+    }
+  }
+  for (const [key, value] of url.searchParams.entries()) {
+    params[key] = value;
+  }
+  return params;
+}
+
+function matchRoute(url: URL, routes: RouteOutput[]): RouteMatch | null {
+  for (const route of routes) {
+    if (validateRoutePattern(route, url.pathname)) {
+      return {
+        url: url.pathname,
+        path: url.pathname,
+        // @ts-ignore
+        routers: route.routers.map((r) => ({
+          component: r.component,
+          path: r.path,
+          guard: r.guard,
+          title: r.title,
+          redirect: r.redirect,
+          build: undefined,
+        })),
+        params: getRouterParams(route, url),
+      };
+    }
+  }
+  return null;
+}
 
 function pageNotFound(): DivElement {
   const body = new DivElement();
   body.style.width = "100vw";
   body.style.height = "100vh";
   body.style.display = "flex";
-  body.style.flexDirection = "column"
+  body.style.flexDirection = "column";
   body.style.justifyContent = "center";
   body.style.alignItems = "center";
   body.style.overflow = "hidden";
@@ -117,7 +122,6 @@ function pageNotFound(): DivElement {
 }
 
 export class Router {
-
   static #router: Router;
   #history: "hash" | "history";
   #props: any = {};
@@ -135,10 +139,10 @@ export class Router {
    * @param data - An array of route objects.
    * @param history - The type of history to use. Can be either "hash" or "history".
    * @returns {void}
-  */
+   */
   static readonly PATH_WILDCARD = "**";
 
-  public beforeEach: (to: RouteMatch) => void = () => { };
+  public beforeEach: (to: RouteMatch) => void = () => {};
 
   private constructor(data: RoutePage[], history: "hash" | "history", pageNotFound?: ComponentType) {
     if (Router.#router) throw new Error("Router already exists");
@@ -163,6 +167,7 @@ export class Router {
   private createAutoId(routes: RoutePage[] = [], id: number) {
     for (const route of routes) {
       route["id"] = `${route.path}_${++id}`;
+      route["isChild"] = route.children && route.children.length > 0;
       if (route.children) {
         id = this.createAutoId(route.children, id);
       }
@@ -170,42 +175,24 @@ export class Router {
     return id;
   }
 
-  private getQueryParams(url: string): Record<string, string> {
-    const queryParams: Record<string, string> = {};
-    const queryString = url.split('?')[1];
-
-    if (queryString) {
-      const pairs = queryString.split('&');
-      for (const pair of pairs) {
-        const [key, value] = pair.split('=');
-        queryParams[decodeURIComponent(key)] = decodeURIComponent(value || '');
-      }
-    }
-
-    return queryParams;
-  }
-
   private handleRoute() {
-    const url = this.#history === "hash" ? window.location.hash : window.location.pathname || "/";
-    this.url = url;
-    if (this.#history === "hash")
-      this.url = this.url.replace(/^#\//, "/");
-    this.#props = this.getQueryParams(this.url);
-    this.buildRoutePage(matchRoute(this.url.split('?')[0], this.routes));
+    const urlPath = (this.#history === "hash" ? window.location.hash.replace(/^#\//, "/") : window.location.pathname) || "/";
+    const url = new URL("http://localhost" + urlPath);
+    this.url = url.pathname;
+    this.buildRoutePage(matchRoute(url, this.routes));
   }
 
   private async buildRoutePage(match: RouteMatch | undefined) {
     let title = "";
+    this.#props = match?.params || {};
     if (!match || !match.routers.length) {
       App.setPage(this.pageNotFound ? new this.pageNotFound() : pageNotFound());
       this.match = null;
-    }
-    else {
-      if (!await this.checkGuard(match)) return;
+    } else {
+      if (!(await this.checkGuard(match))) return;
       if (this.match) {
         for (let i = 0; i < match.routers.length; i++) {
-          if (!this.match?.routers[i]?.id)
-            break;
+          if (!this.match?.routers[i]?.id) break;
           const route = match.routers[i];
           if (route.id == this.match?.routers[i]?.id) {
             route.build = this.match.routers[i].build;
@@ -227,14 +214,12 @@ export class Router {
       if (!buildRoot.build) {
         if (buildRoot.component instanceof Function && buildRoot.component.prototype instanceof Element) {
           // @ts-ignore
-          buildRoot.build = App.setPage(new buildRoot.component);
-        }
-        else {
+          buildRoot.build = App.setPage(new buildRoot.component());
+        } else {
           // @ts-ignore
           const mod = await buildRoot.component();
-          buildRoot.build = App.setPage(new mod.default);
+          buildRoot.build = App.setPage(new mod.default());
         }
-
       }
     }
     if (title) document.title = title;
@@ -262,8 +247,8 @@ export class Router {
           },
           reject: () => {
             resolve(false);
-          }
-        }
+          },
+        };
         guard.beforeEach(response);
       });
       result = await primose;
@@ -280,7 +265,9 @@ export class Router {
   static create(data: {
     routes: RoutePage[];
     pageNotFound?: ComponentType;
-    history?: "hash" | "history"; sitemaps?: { baseUrl: string }, robots?: "auto" | { [key: string]: any }
+    history?: "hash" | "history";
+    sitemaps?: { baseUrl: string };
+    robots?: "auto" | { [key: string]: any };
   }): void {
     Router.#router = new Router(data.routes, data.history || "history", data.pageNotFound);
   }
@@ -289,32 +276,29 @@ export class Router {
     if (Router.#router) {
       Router.#router.match = null;
       Router.#router.handleRoute();
-    }
-    else
-      window.location.reload();
+    } else window.location.reload();
   }
 
   public static get props(): { [key: string]: any } {
-    if (window.location.hash) {
-      const hashParts = window.location.hash.split('?');
-      if (hashParts.length > 1) {
-        const hashParams = new URLSearchParams(hashParts[1]);
-        const props: { [key: string]: any } = {};
-        for (const [key, value] of hashParams) {
-          props[key] = value;
-        }
-        return props;
-      }
-    }
-    else {
-      const searchParams = new URLSearchParams(window.location.search);
-      const props: { [key: string]: any } = {};
-      for (const [key, value] of searchParams) {
-        props[key] = value;
-      }
-      return props;
-    }
-    return {};
+    // if (window.location.hash) {
+    //   const hashParts = window.location.hash.split("?");
+    //   if (hashParts.length > 1) {
+    //     const hashParams = new URLSearchParams(hashParts[1]);
+    //     const props: { [key: string]: any } = {};
+    //     for (const [key, value] of hashParams) {
+    //       props[key] = value;
+    //     }
+    //     return props;
+    //   }
+    // } else {
+    //   const searchParams = new URLSearchParams(window.location.search);
+    //   const props: { [key: string]: any } = {};
+    //   for (const [key, value] of searchParams) {
+    //     props[key] = value;
+    //   }
+    //   return props;
+    // }
+    return this.#router.#props || {};
   }
 
   static get history() {
@@ -331,12 +315,11 @@ export class Router {
   public static async go(url: string, props?: {}) {
     if (!Router.#router) throw new Error("Router not initialized");
     if (!url) return;
-    if (!url.startsWith("/"))
-      url = "/" + url;
+    if (!url.startsWith("/")) url = "/" + url;
     const newUrl = Router.buildURL(url, props || {});
     if (Router.#router.#history === "history") history.pushState(props || {}, "", newUrl);
     else window.location.hash = newUrl;
-    Router.#router?.handleRoute();
+    // Router.#router?.handleRoute();
   }
 
   public static back() {
@@ -347,7 +330,7 @@ export class Router {
     window.history.forward();
   }
 
-  private static getRouteViewFree(routeView: RouteView): RoutePageBuild | undefined {
+  protected static getRouteViewFree(routeView: RouteView): RoutePageBuild | undefined {
     if (!Router.#router || !Router.#router.match) return undefined;
     const { routers } = Router.#router.match;
     const route = routers.find((route) => (!route.routeView || route.routeView === routeView) && route.parent);
@@ -357,12 +340,12 @@ export class Router {
   }
 
   /**
-    * Returns the Location object's URL's path.
-    *
-    * Can be set, to navigate to the same URL with a changed path.
-    *
-    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Location/pathname)
-  */
+   * Returns the Location object's URL's path.
+   *
+   * Can be set, to navigate to the same URL with a changed path.
+   *
+   * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Location/pathname)
+   */
   public static get pathname() {
     return (Router.#router?.url || window.location.pathname).replace(/^\//, "");
   }

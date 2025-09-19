@@ -1,6 +1,6 @@
 {
   "name": "typecomposer",
-  "version": "0.1.50",
+  "version": "0.1.47",
   "repository": {
     "type": "git",
     "url": "https://github.com/zico15"
@@ -21,32 +21,14 @@
     "index.js",
     "index.d.ts",
     "index.js.map",
-    "client.d.ts",
     "typings/index.d.ts",
-    "public",
     "assets",
     "translation",
     "LICENSE"
   ],
-  "scripts": {
-    "copy": "rm -rf '/Users/Ezequiel/Desktop/learn-typecomposer-main/node_modules/typecomposer/* -y' && cp -r ./dist/* '/Users/Ezequiel/Desktop/learn-typecomposer-main/node_modules/typecomposer'",
-    "build": "node scripts/build.js",
-    "minify": "find dist -name '*.js' -exec terser {} --compress drop_console=true --mangle --output {} \\;",
-    "pub": "npm run build && cd dist && npm publish"
-  },
   "keywords": [
     "typecomposer"
   ],
-  "exports": {
-    ".": {
-      "import": "./index.js",
-      "require": "./index.js"
-    },
-    "./*": {
-      "import": "./*.js",
-      "require": "./*.js"
-    }
-  },
   "preferGlobal": true,
   "author": "Ezequiel",
   "license": "MIT",
@@ -54,6 +36,7 @@
     "@types/node": "^24.3.3",
     "csstype": "^3.1.3",
     "terser": "^5.44.0",
+    "ts-morph": "^27.0.0",
     "typescript": "^5.9.2",
     "vite": "^7.1.5"
   }

@@ -9,30 +9,47 @@ export type StyleProperties = {
   [K in keyof CSS.PropertiesHyphen]?: CSS.PropertiesHyphen[K] | ref<CSS.PropertiesHyphen[K]> | ref<string>;
 };
 
-export type ComponentMethods<T> = Omit<Partial<{
-  [K in keyof T]: T[K] extends (...args: any[]) => any ? never : T[K] | undefined;
-}>,   "style" | "className" | "id" | "title" | "text" | "html" | "readOnly" | "hidden" | "variant" | "itemLoading" | "disabled" | "innerText" | "children" | "translate" | "contentEditable" | "onInit">
-  & {
-    id?: refString;
-    title?: refString;
-    key?: string | symbol;
-    className?: refString;
-    text?: refString | refNumber | refBoolean;
-    html?: refString | refNumber | refBoolean;
-    readOnly?: refBoolean | boolean;
-    hidden?: refBoolean | boolean;
-    variant?: refString;
-    itemLoading?: boolean;
-    disabled?: refBoolean;
-    children?: (IComponent | null | undefined)[];
-    innerHTML?: refString | refNumber | refBoolean | IComponent;
-    innerText?: refString | refNumber | refBoolean | IComponent;
-    ref?: HTMLElement
-    onInit?: (() => void);
-  };
+export type ComponentMethods<T> = Omit<
+  Partial<{
+    [K in keyof T]: T[K] extends (...args: any[]) => any ? never : T[K] | undefined;
+  }>,
+  | "style"
+  | "className"
+  | "toString"
+  | "id"
+  | "title"
+  | "text"
+  | "html"
+  | "readOnly"
+  | "hidden"
+  | "variant"
+  | "itemLoading"
+  | "disabled"
+  | "innerText"
+  | "children"
+  | "translate"
+  | "contentEditable"
+  | "onInit"
+> & {
+  id?: refString;
+  title?: refString;
+  key?: string | symbol;
+  className?: refString;
+  text?: refString | refNumber | refBoolean;
+  html?: refString | refNumber | refBoolean;
+  readOnly?: refBoolean | boolean;
+  hidden?: refBoolean | boolean;
+  variant?: refString;
+  itemLoading?: boolean;
+  disabled?: refBoolean;
+  children?: (IComponent | null | undefined)[];
+  innerHTML?: refString | refNumber | refBoolean | IComponent;
+  innerText?: refString | refNumber | refBoolean | IComponent;
+  ref?: HTMLElement;
+  onInit?: () => void;
+};
 
 export type ElementType<T = HTMLElement, K extends keyof any = ""> = Omit<{ style?: StyleProperties } & ComponentMethods<T>, K>;
-
 
 interface StylePropertiesMethods {
   /** [MDN reference](https://developer.mozilla.org/docs/Web/API/CSSStyleDeclaration/getPropertyPriority) */

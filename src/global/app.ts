@@ -38,10 +38,6 @@ export class __App__ {
       this.#language.value = data.language;
       this.#theme = this.#theme || document.documentElement["data-theme"] || "light";
     }
-    console.log("App Theme:", this.#language);
-    this.#language.subscribe((newValue, oldValue) => {
-      console.log("Language changed from", oldValue, "to", newValue);
-    });
   }
 
   public get theme(): theme {
