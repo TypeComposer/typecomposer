@@ -1,32 +1,44 @@
-# TypeComposer
+# **TypeComposer**
 
-TypeComposer is a frontend framework that allows you to create user interfaces declaratively using only classes in TypeScript or JavaScript, eliminating the need to write HTML directly.It offers a simplified and efficient approach to web development.
+**TypeComposer** is a modern frontend framework that allows you build user interfaces **declaratively** using **TypeScript or JavaScript classes** without writing HTML directly.
 
-## Features
+It provides a clean, class-based approach to UI development while maintaining full compatibility with existing web technologies.
 
-    - Create user interfaces without writing HTML directly.
+## ✨ Features
 
-- Uses a class-based syntax to define the structure of the interface.
-- Full TypeScript support and compatibility with JavaScript.
-- Easily integratable with other frontend frameworks and libraries.
-- Style and positioning of elements controlled via CSS.
+* 🚀 **No HTML Required** – Define your entire UI using only TypeScript or JavaScript classes.
+* 💡 **Declarative Syntax** – Create complex layouts with a simple, class-based structure.
+* 🔷 **Full TypeScript Support** – Enjoy type safety, IntelliSense, and seamless TypeScript integration.
+* ⚛️ **React-Friendly** – Easily integrate TypeComposer components into React projects.
+* 🎨 **Tailwind CSS Ready** – Style and position elements with standard CSS or leverage **Tailwind CSS** for rapid, utility-first styling.
 
-## Installation
+## 📦 Installation
 
-You can install TypeComposer via npm:
+Install TypeComposer using **npm**:
 
 ```bash
 npm create typecomposer@latest
 ```
 
-## Usage
+This will set up a new TypeComposer project with all the necessary configuration.
 
-To get started with TypeComposer, import the necessary elements from the package and start creating your user interface using classes.Here's a basic example of a login page:
+## 🚀 Getting Started
 
-```js
+Creating a UI in TypeComposer is as simple as extending classes and composing elements.
+Here’s an example of a **basic page** with a counter button:
+
+```ts
 import typescriptLogo from "/typescript.svg";
 import logo from "/typecomposer.svg";
-import { App, BorderPaneElement, ButtonElement, H1Element, HBoxElement, ImageElement, VBoxElement } from "typecomposer";
+import {
+  App,
+  BorderPaneElement,
+  ButtonElement,
+  H1Element,
+  HBoxElement,
+  ImageElement,
+  VBoxElement
+} from "typecomposer";
 import "./style.css";
 
 export class AppPage extends BorderPaneElement {
@@ -35,13 +47,27 @@ export class AppPage extends BorderPaneElement {
   onInit(): void {
     const vbox = new VBoxElement({ justifyContent: "center" });
     const images = new HBoxElement({ width: "100%", alignItems: "center", justifyContent: "center" });
+
     images.append(new ImageElement({ src: logo, className: "logo" }));
     images.append(new ImageElement({ src: typescriptLogo, className: "logo" }));
+
     vbox.append(images);
-    vbox.append(new H1Element({ text: "TypeComposer", textAlign: "center", color: "#fcfffa" }));
-    const counter = new ButtonElement({ text: "0", width: "35%", height: "50px", alignSelf: "center" });
+    vbox.append(new H1Element({
+      text: "TypeComposer",
+      textAlign: "center",
+      color: "#fcfffa"
+    }));
+
+    const counter = new ButtonElement({
+      text: "0",
+      width: "35%",
+      height: "50px",
+      alignSelf: "center"
+    });
+
     counter.onclick = () => (counter.innerHTML = (this.count++).toString());
     vbox.append(counter);
+
     this.center = vbox;
   }
 }
@@ -49,14 +75,6 @@ export class AppPage extends BorderPaneElement {
 App.setPage(new AppPage());
 ```
 
-## Contributing
+## 📄 License
 
-Contributions are welcome! If you find any issues or have suggestions for improvement, feel free to open an issue or submit a pull request in this GitHub repository.
-
-## License
-
-This project is licensed under the[MIT License](LICENSE).
-
-```
-
-```
+This project is licensed under the [MIT License](LICENSE).
