@@ -1,54 +1,45 @@
 {
-  "name": "typecomposer",
+  "name": "@typecomposer/typecomposer",
   "version": "0.1.50",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/zico15"
-  },
-  "description": "A component library for getting people started with easy to re-use components for everyday projects.",
-  "main": "index.js",
-  "module": "index.js",
-  "types": "index.d.ts",
+  "description": "Build modern web interfaces without touching a single line of HTML",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "sideEffects": [
-    "./global/index.js",
-    "./core/styles/**"
+    "./dist/global/index.js",
+    "./dist/core/styles/**"
   ],
   "files": [
+    "dist",
     "README.md",
-    "core",
-    "global",
-    "styles",
-    "index.js",
-    "index.d.ts",
-    "index.js.map",
-    "client.d.ts",
-    "typings/index.d.ts",
-    "public",
-    "assets",
-    "translation",
     "LICENSE"
   ],
-  "scripts": {
-    "copy": "rm -rf '/Users/Ezequiel/Desktop/learn-typecomposer-main/node_modules/typecomposer/* -y' && cp -r ./dist/* '/Users/Ezequiel/Desktop/learn-typecomposer-main/node_modules/typecomposer'",
-    "build": "node scripts/build.js",
-    "minify": "find dist -name '*.js' -exec terser {} --compress drop_console=true --mangle --output {} \\;",
-    "pub": "npm run build && cd dist && npm publish"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TypeComposer/typecomposer.git"
   },
   "keywords": [
-    "typecomposer"
+    "typecomposer",
+    "web",
+    "ui",
+    "framework",
+    "front-end"
   ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && npm run minify",
+    "minify": "find dist -name '*.js' -exec terser {} --compress drop_console=true --mangle --output {} \\;",
+    "pub": "npm run build && npm publish --access public"
+  },
   "exports": {
     ".": {
-      "import": "./index.js",
-      "require": "./index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
     },
     "./*": {
-      "import": "./*.js",
-      "require": "./*.js"
+      "import": "./dist/*.js",
+      "require": "./dist/*.js"
     }
   },
-  "preferGlobal": true,
-  "author": "Ezequiel",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^24.3.3",
@@ -56,5 +47,8 @@
     "terser": "^5.44.0",
     "typescript": "^5.9.2",
     "vite": "^7.1.5"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
