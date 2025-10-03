@@ -2,6 +2,8 @@ import { Url } from "url";
 import { App, DivElement, RouteView, AsyncComponentLoader } from "../../";
 import { GuardResponse, RouterGuard } from "./RouterGuard";
 
+export type RouterHistoryMode = "history" | "hash" | "memory" | "static" | "abstract";
+
 export interface RoutePage {
   path: string;
   component?: ComponentType | AsyncComponentLoader;
@@ -123,7 +125,7 @@ function pageNotFound(): DivElement {
 
 export class Router {
   static #router: Router;
-  #history: "hash" | "history";
+  #history: RouterHistoryMode;
   #props: any = {};
   private routes: RouteOutput[] = [];
   private url: string = window.location.pathname;
@@ -132,19 +134,19 @@ export class Router {
   private match: RouteMatch | null = null;
   /**
    * @param data - An array of route objects.
-   * @param history - The type of history to use. Can be either "hash" or "history".
+   * @param history - The type of history to use. Can be "history", "hash", "memory", "static", or "abstract".
    */
   static readonly SEGMENT_WILDCARD = "*";
   /**
    * @param data - An array of route objects.
-   * @param history - The type of history to use. Can be either "hash" or "history".
+   * @param history - The type of history to use. Can be "history", "hash", "memory", "static", or "abstract".
    * @returns {void}
    */
   static readonly PATH_WILDCARD = "**";
 
   public beforeEach: (to: RouteMatch) => void = () => {};
 
-  private constructor(data: RoutePage[], history: "hash" | "history", pageNotFound?: ComponentType) {
+  private constructor(data: RoutePage[], history: RouterHistoryMode, pageNotFound?: ComponentType) {
     if (Router.#router) throw new Error("Router already exists");
     Router.#router = this;
     this.#history = history;
@@ -160,7 +162,10 @@ export class Router {
     this.pageNotFound = pageNotFound;
     this.createAutoId(data, 0);
     this.routes = getRoutePairs(data);
-    window.addEventListener(history == "history" ? "popstate" : "hashchange", () => this.handleRoute());
+    // Only add event listeners for browser-based routing modes
+    if (history === "history" || history === "hash") {
+      window.addEventListener(history == "history" ? "popstate" : "hashchange", () => this.handleRoute());
+    }
     this.handleRoute();
   }
 
@@ -176,7 +181,18 @@ export class Router {
   }
 
   private handleRoute() {
-    const urlPath = (this.#history === "hash" ? window.location.hash.replace(/^#\//, "/") : window.location.pathname) || "/";
+    let urlPath: string;
+    
+    // Handle different routing modes
+    if (this.#history === "hash") {
+      urlPath = (window.location.hash.replace(/^#\//, "/")) || "/";
+    } else if (this.#history === "history") {
+      urlPath = window.location.pathname || "/";
+    } else {
+      // For memory, static, and abstract modes, use the internal URL state
+      urlPath = this.url || "/";
+    }
+    
     const url = new URL("http://localhost" + urlPath);
     this.url = url.pathname;
     this.buildRoutePage(matchRoute(url, this.routes));
@@ -265,7 +281,7 @@ export class Router {
   static create(data: {
     routes: RoutePage[];
     pageNotFound?: ComponentType;
-    history?: "hash" | "history";
+    history?: RouterHistoryMode;
     sitemaps?: { baseUrl: string };
     robots?: "auto" | { [key: string]: any };
   }): void {
@@ -317,16 +333,36 @@ export class Router {
     if (!url) return;
     if (!url.startsWith("/")) url = "/" + url;
     const newUrl = Router.buildURL(url, props || {});
-    if (Router.#router.#history === "history") history.pushState(props || {}, "", newUrl);
-    else window.location.hash = newUrl;
+    
+    // Handle different routing modes
+    if (Router.#router.#history === "history") {
+      history.pushState(props || {}, "", newUrl);
+    } else if (Router.#router.#history === "hash") {
+      window.location.hash = newUrl;
+    } else {
+      // For memory, static, and abstract modes, update internal state and trigger route handling
+      Router.#router.url = url;
+      Router.#router.#props = props || {};
+      Router.#router.handleRoute();
+    }
     // Router.#router?.handleRoute();
   }
 
   public static back() {
+    if (Router.#router && (Router.#router.#history === "memory" || Router.#router.#history === "static" || Router.#router.#history === "abstract")) {
+      // Non-browser modes don't support back navigation by default
+      console.warn(`Router.back() is not supported in ${Router.#router.#history} mode`);
+      return;
+    }
     window.history.back();
   }
 
   public static forward() {
+    if (Router.#router && (Router.#router.#history === "memory" || Router.#router.#history === "static" || Router.#router.#history === "abstract")) {
+      // Non-browser modes don't support forward navigation by default
+      console.warn(`Router.forward() is not supported in ${Router.#router.#history} mode`);
+      return;
+    }
     window.history.forward();
   }
 
