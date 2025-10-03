@@ -42,9 +42,9 @@ export type ComponentMethods<T> = Omit<
   variant?: refString;
   itemLoading?: boolean;
   disabled?: refBoolean;
-  children?: (IComponent | null | undefined)[];
-  innerHTML?: refString | refNumber | refBoolean | IComponent;
-  innerText?: refString | refNumber | refBoolean | IComponent;
+  children?: (Node | null | undefined)[];
+  innerHTML?: refString | refNumber | refBoolean | Node;
+  innerText?: refString | refNumber | refBoolean | Node;
   ref?: HTMLElement;
   onInit?: () => void;
 };
