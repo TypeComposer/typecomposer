@@ -170,7 +170,6 @@ export class Router {
 
   private handleRoute() {
     let urlPath: string;
-
     // Handle different routing modes
     if (this.#history === "hash") {
       urlPath = window.location.hash.replace(/^#\//, "/") || "/";
@@ -182,6 +181,7 @@ export class Router {
     }
 
     const url = new URL("http://localhost" + urlPath);
+    console.log("Routing to URL:", url.href);
     this.url = url.pathname;
     this.buildRoutePage(matchRoute(url, this.routes));
   }
@@ -306,6 +306,7 @@ export class Router {
     // Handle different routing modes
     if (Router.#router.#history === "history") {
       history.pushState(props || {}, "", newUrl);
+      Router.#router.handleRoute();
     } else if (Router.#router.#history === "hash") {
       window.location.hash = newUrl;
     } else {
