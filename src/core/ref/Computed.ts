@@ -1,17 +1,5 @@
 import { DynamicRef, refType, ref } from "./RefObject";
 
-function isTemplateElement(value: any) {
-  const cache = new Map<string, any>();
-  if (!Array.isArray(value)) {
-    value = [value];
-  }
-  for (const v of value) {
-    if (v && v instanceof HTMLElement) {
-      const key = (v.key || "").toString();
-    }
-  }
-  return cache.size > 0;
-}
 const computedSymbol = Symbol("computed");
 
 class ComputedSet extends Set<refType> {
@@ -52,21 +40,17 @@ class ComputedSet extends Set<refType> {
 
 export function computed<T>(fn: () => Exclude<T, void>): DynamicRef<T>;
 export function computed(fn: TemplateStringsArray, ...values: any[]): DynamicRef<string>;
-export function computed<T>(fn: TemplateStringsArray | (() => Exclude<T, void>), ...values: any[]): DynamicRef<T> {
+export function computed<T>(fn: any, ...values: any[]): DynamicRef<T> {
   if (typeof fn !== "function") throw new Error("computed: fn must be a function");
   const observers = new ComputedSet();
   for (const v of values) {
     observers.put(v);
   }
-  // @ts-ignore
   const value = fn(observers);
-  // @ts-ignore
   const r = ref(value);
-  // @ts-ignore
   const func = () => {
     const oldObservers = observers.clone();
     observers.clear();
-    // @ts-ignore
     r.value = fn(observers);
     const observersToRemove = oldObservers.size > 0 ? [...oldObservers].filter((o) => !observers.has(o)) : [];
     const observersToAdd = observers.size > 0 ? [...observers].filter((o) => !oldObservers.has(o)) : [];

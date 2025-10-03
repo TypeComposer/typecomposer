@@ -7,7 +7,7 @@ function deepCopy<T>(obj: T, cache = new WeakMap()): T {
   if (obj instanceof ref) obj = obj.valueOf();
   if (obj === null || typeof obj !== "object") return obj;
   if (cache.has(obj)) return cache.get(obj);
-  if (obj instanceof HTMLElement) return obj;
+  if (obj instanceof Node) return obj;
   if (typeof obj === "function") return obj;
   if (Object.getPrototypeOf(obj) === null) return obj;
 
@@ -351,7 +351,7 @@ const TypeComposer = {
     customElements.define(name, constructor, options);
   },
   createElement: (tag: any, props: any, ...children: any[]): any => {
-    const isComponent = tag?.prototype instanceof HTMLElement;
+    const isComponent = tag?.prototype instanceof Node;
     if (typeof tag === "string" || isComponent) {
       if (tag === "fragment") {
         const fragment = document.createDocumentFragment();
@@ -1189,18 +1189,13 @@ class RefMutationObserver extends MutationObserver {
   }
 }
 
-function getIndexInKeepElements(element: HTMLElement | string, keepElements: ChildNode[]): number {
-  if (element instanceof HTMLElement) return keepElements.length - keepElements.indexOf(element);
-  return -1;
-}
-
 function replaceElements(parentNode: HTMLElement, start: Comment, end: Comment, newElements: (HTMLElement | string)[]): void {
   const childNodes = Array.from(parentNode.childNodes);
   const startIndex = childNodes.indexOf(start);
   const endIndex = childNodes.indexOf(end);
   if (!Array.isArray(newElements)) newElements = [newElements];
   // @ts-ignore
-  newElements = newElements.filter(Boolean).map((e) => (e instanceof HTMLElement ? e : document.createTextNode(e?.toString() || e)));
+  newElements = newElements.filter(Boolean).map((e) => (e instanceof Node ? e : document.createTextNode(e?.toString() || e)));
   if (startIndex === -1 || endIndex === -1 || endIndex <= startIndex) return;
 
   const existingElements = childNodes.slice(startIndex + 1, endIndex);

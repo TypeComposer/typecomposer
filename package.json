@@ -28,7 +28,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json && npm run minify",
     "minify": "find dist -name '*.js' -exec terser {} --compress drop_console=true --mangle --output {} \\;",
-    "pub": "npm run build && npm publish --access public"
+    "pub": "npm run build && npm publish --access public",
+    "copy": "rm -rf '/Users/Ezequiel/Documents/TypeComposer/docs/node_modules/typecomposer/* -y' && cp -r ./dist/* '/Users/Ezequiel/Documents/TypeComposer/docs/node_modules/typecomposer'"
   },
   "exports": {
     ".": {

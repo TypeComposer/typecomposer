@@ -3,9 +3,11 @@ import { RefContainer } from "./RefContainer";
 import { RefSet, refSet } from "./RefSet";
 
 class RefObjectContainer extends RefContainer {
+  declare root: RefContainer;
   instance: { value: any } = { value: null };
-  constructor(value: object, readonly root?: RefContainer) {
+  constructor(value: object, root?: RefContainer) {
     super(value, root as any);
+    this.root = root;
     this.value = createObservador(value, this);
     if (isApplyProxy(value)) {
       RefObjectContainer.createObject.bind(this)(this.value, value, this);
@@ -116,9 +118,11 @@ function applyProxy<T extends object>(target: any, key: keyof T, value: any, rec
     target[key].emit(key, value);
   } else if (!(target[key] instanceof Element) && target[key] instanceof Object) {
     if (Object.getPrototypeOf(target[key]) === Object.prototype) RefObjectContainer.applyObject(target[key], value, container);
-  } else if (value !== undefined && value !== null) {
+  } else if (value != null) {
     RefObjectContainer.createObject(target, { [key]: value }, container);
-  } else Reflect.set(target, key, value, receiver);
+  } else {
+    Reflect.set(target, key, value, receiver);
+  }
   return receiver;
 }
 
@@ -137,8 +141,7 @@ function isApplyProxy(value: any) {
 }
 
 function createObservador<T extends object>(obj: T, container: RefObjectContainer): refObject<T> {
-  // if (!obj) obj = {} as T;
-  const refObject = new Proxy(obj || {}, {
+  const refObject = new Proxy(obj || ({} as T), {
     // @ts-ignore
     get(target, key: keyof T, receiver) {
       if (key == "toString") return JSON.stringify(obj);

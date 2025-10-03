@@ -34,11 +34,8 @@ export class RefContainer {
     return true;
   }
 
-  info() {
-    console.log("RefContainer info: ", this.value, "subscribers: ", this.#subscribers);
-  }
+  info() {}
 
-  // @ts-ignore
   emitAll(propertyName: string | symbol, value: any, oldValue: any): any {
     this.#subscribers.forEach((s) => this.emit(s, value, oldValue));
     if (this.root && this.root.emitAll) this.root.emitAll("value", this.root["instance"] ? this.root["instance"]["value"] : this.root.value, oldValue);
@@ -52,7 +49,6 @@ export class RefContainer {
       resutl.index = index;
       if (index !== -1) resutl.subscriber = this.#subscribers[index];
     } else {
-      // @ts-ignore
       const index = this.#subscribers.findIndex((s) => typeof s.target !== "function" && s.target.deref() === target && s.propertyName === propertyName);
       resutl.index = index;
       if (index !== -1) resutl.subscriber = this.#subscribers[index];
@@ -85,6 +81,7 @@ export class RefContainer {
     if (resutl.subscriber === undefined) return false;
     resutl.subscriber.onUnsubscribe?.();
     this.#subscribers = this.#subscribers.filter((_, i) => i !== resutl.index);
+    // @ts-ignore
     if (typeof target !== "function") Ref.unsubscribe(target, propertyName);
     return true;
   }
@@ -109,7 +106,6 @@ export class RefContainer {
     try {
       return JSON.parse(JSON.stringify(this.value));
     } catch (e) {
-      console.error(e);
       return {};
     }
   }

@@ -1,4 +1,4 @@
-import { Component, ref, Router } from "../";
+import { ref, Router } from "../";
 
 export type theme = "light" | "dark" | string;
 
@@ -24,41 +24,69 @@ async function detectOS(): Promise<Platform> {
 }
 
 export class __App__ {
-  private translateData: {};
-  private component: Component | undefined = undefined;
-  #platform: Platform = undefined;
+  private translateData: object;
+  private component: IComponent | undefined = undefined;
+  #platform: Platform | undefined = undefined;
   private translateComputed: any = undefined;
-  #theme: string = document.documentElement["data-theme"];
-  readonly #language: ref<string> = ref(document.documentElement.lang || "en");
+  #theme: ref<theme> = ref(this.getThemePreferred());
+  #language: ref<string> = ref(this.getLanguagePreferred());
+  #themeListener = (e: MediaQueryListEvent) => {
+    this.theme.value = e.matches ? "dark" : "light";
+  };
 
   constructor() {
+    this.#theme.subscribe((theme) => {
+      const html = document.querySelector("html");
+      html?.setAttribute("data-theme", theme);
+      localStorage.setItem(
+        "__app__",
+        JSON.stringify({
+          theme: theme,
+          language: this.#language.value,
+        })
+      );
+    });
+
+    this.#language.subscribe((language) => {
+      if (this.#language.value != language) {
+        this.#language.value = language;
+        localStorage.setItem(
+          "__app__",
+          JSON.stringify({
+            theme: this.#theme.value,
+            language: language,
+          })
+        );
+        if (this.translateComputed === undefined) Router.reload();
+      }
+    });
+
+    // Auto theme detection
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", this.#themeListener);
+  }
+
+  disableAutoTheme(): void {
+    window.matchMedia("(prefers-color-scheme: dark)").removeEventListener("change", this.#themeListener);
+  }
+
+  enableAutoTheme(): void {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", this.#themeListener);
+  }
+
+  getThemePreferred(): theme {
     const store = localStorage.getItem("__app__");
-    if (store) {
-      const data = JSON.parse(store);
-      this.#language.value = data.language;
-      this.#theme = this.#theme || document.documentElement["data-theme"] || "light";
-    }
+    const data = store ? JSON.parse(store) : {};
+    return data.theme || document.documentElement["data-theme"] || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
   }
 
-  public get theme(): theme {
+  getLanguagePreferred(): string {
+    const store = localStorage.getItem("__app__");
+    const data = store ? JSON.parse(store) : {};
+    return data.language || document.documentElement.lang || "en";
+  }
+
+  public get theme(): ref<theme> {
     return this.#theme;
-  }
-
-  public set theme(value: theme) {
-    this.#theme = value;
-    const html = document.querySelector("html");
-    html?.setAttribute("data-theme", value);
-    localStorage.setItem("__app__", JSON.stringify({ theme: value, language: this.#language.value }));
-  }
-
-  public set language(value: string) {
-    const isUpdate = this.#language.value != value;
-
-    if (isUpdate) {
-      this.#language.value = value;
-      localStorage.setItem("__app__", JSON.stringify({ theme: this.#theme, language: value }));
-      if (this.translateComputed === undefined) Router.reload();
-    }
   }
 
   public get language(): ref<string> {
@@ -109,12 +137,11 @@ export class __App__ {
     document.title = value;
   }
 
-  setTitle(value: string) {
+  setTitle(value: string): void {
     document.title = value;
   }
 
-  public get style(): CSSStyleDeclarationRef {
-    // @ts-ignore
+  public get style(): any {
     return document.documentElement.style;
   }
 
@@ -134,7 +161,7 @@ export class __App__ {
     });
   }
 
-  public getCookie(nome: string) {
+  public getCookie(nome: string): any {
     const cookies = "; " + document.cookie;
     const partes = cookies.split("; " + nome + "=");
     if (partes.length === 2) {
@@ -148,30 +175,30 @@ export class __App__ {
     return null;
   }
 
-  public setCookie(nome: string, valor: any, dias: number) {
+  public setCookie(nome: string, valor: any, dias: number): void {
     const data = new Date();
     data.setTime(data.getTime() + dias * 24 * 60 * 60 * 1000);
     if (typeof valor === "object") valor = JSON.stringify(valor);
     document.cookie = `${nome}=${valor}; expires=${data.toUTCString()}; path=/`;
   }
 
-  public removeCookie(nome: string) {
+  public removeCookie(nome: string): void {
     document.cookie = `${nome}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
   }
 
-  public getLocalStorage(nome: string) {
+  public getLocalStorage(nome: string): string {
     return localStorage.getItem(nome);
   }
 
-  public setLocalStorage(nome: string, valor: string) {
+  public setLocalStorage(nome: string, valor: string): void {
     localStorage.setItem(nome, valor);
   }
 
-  public removeLocalStorage(nome: string) {
+  public removeLocalStorage(nome: string): void {
     localStorage.removeItem(nome);
   }
 
-  requestFullscreen() {
+  requestFullscreen(): void {
     if (document.documentElement.requestFullscreen) {
       document.documentElement.requestFullscreen();
     } else if (document.documentElement["mozRequestFullScreen"]) {
@@ -183,7 +210,7 @@ export class __App__ {
     }
   }
 
-  exitFullscreen() {
+  exitFullscreen(): void {
     if (document.exitFullscreen) {
       document.exitFullscreen();
     } else if (document["mozCancelFullScreen"]) {
