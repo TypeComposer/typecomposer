@@ -108,6 +108,10 @@ function pageNotFound(): DivElement {
   return body;
 }
 
+interface RouteOutput extends RoutePageBuild {
+  isChild?: boolean;
+}
+
 export class Router {
   static #router: Router;
   #history: RouterHistoryMode;
@@ -128,8 +132,6 @@ export class Router {
    * @returns {void}
    */
   static readonly PATH_WILDCARD = "**";
-  beforeEach: (to: RouteMatch) => void = () => {};
-
   public beforeEach: (to: RouteMatch) => void = () => {};
 
   private constructor(data: RoutePage[], history: RouterHistoryMode, pageNotFound?: ComponentType) {
@@ -168,17 +170,17 @@ export class Router {
 
   private handleRoute() {
     let urlPath: string;
-    
+
     // Handle different routing modes
     if (this.#history === "hash") {
-      urlPath = (window.location.hash.replace(/^#\//, "/")) || "/";
+      urlPath = window.location.hash.replace(/^#\//, "/") || "/";
     } else if (this.#history === "history") {
       urlPath = window.location.pathname || "/";
     } else {
       // For memory, static, and abstract modes, use the internal URL state
       urlPath = this.url || "/";
     }
-    
+
     const url = new URL("http://localhost" + urlPath);
     this.url = url.pathname;
     this.buildRoutePage(matchRoute(url, this.routes));
@@ -284,7 +286,7 @@ export class Router {
     return this.#router.#props || {};
   }
 
-  static get history(): "hash" | "history" {
+  static get history(): RouterHistoryMode {
     return Router.#router.#history;
   }
 
@@ -300,7 +302,7 @@ export class Router {
     if (!url) return;
     if (!url.startsWith("/")) url = "/" + url;
     const newUrl = Router.buildURL(url, props || {});
-    
+
     // Handle different routing modes
     if (Router.#router.#history === "history") {
       history.pushState(props || {}, "", newUrl);
