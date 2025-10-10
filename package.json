@@ -1,6 +1,6 @@
 {
   "name": "@typecomposer/typecomposer",
-  "version": "0.1.50",
+  "version": "0.1.54",
   "description": "Build modern web interfaces without touching a single line of HTML",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -26,9 +26,9 @@
     "front-end"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && npm run minify",
+    "build": "tsc -p tsconfig.json && npm run copy",
     "minify": "find dist -name '*.js' -exec terser {} --compress drop_console=true --mangle --output {} \\;",
-    "pub": "npm run build && npm publish --access public",
+    "pub": "node scripts/build.js && npm run minify && cd dist && npm publish --access public",
     "copy": "rm -rf '/Users/Ezequiel/Documents/TypeComposer/docs/node_modules/typecomposer/* -y' && cp -r ./dist/* '/Users/Ezequiel/Documents/TypeComposer/docs/node_modules/typecomposer'"
   },
   "exports": {

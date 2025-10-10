@@ -351,6 +351,7 @@ const TypeComposer = {
     customElements.define(name, constructor, options);
   },
   createElement: (tag: any, props: any, ...children: any[]): any => {
+    console.log("createElement", { tag });
     const isComponent = tag?.prototype instanceof Node;
     if (typeof tag === "string" || isComponent) {
       if (tag === "fragment") {
@@ -389,6 +390,7 @@ const TypeComposer = {
       if (refKey) refKey(el);
       Component.applyProps(el, ElementType);
       const appendChild = (parent: Element, child: any) => {
+        console.log("appendChild", parent, child, " is ", child instanceof Node);
         if (child instanceof ref) {
           // @ts-ignore
           parent.append(child);
@@ -486,7 +488,7 @@ export class Component extends HTMLElement implements IComponent {
             (element as any).setAttribute("item-loading", propValue as string);
             break;
           case "children":
-            if (Array.isArray(propValue)) (element as any).append(...(propValue as any));
+            if (Array.isArray(propValue)) (element as any).append(...(propValue.filter(Boolean) as any));
             else (element as any).append(propValue as any);
             break;
           case "for":
@@ -1274,7 +1276,7 @@ Array.prototype.clear = function () {
 export interface HTMLComponent {
   style?: StyleProperties;
   ref?: HTMLElement;
-  children?: HTMLElement[];
+  children?: Node[];
   className?: string | ref<string>;
   onabort?: (event: UIEvent) => void;
   onauxclick?: (event: MouseEvent) => void;
