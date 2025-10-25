@@ -57,6 +57,7 @@ declare global {
     createFragment: (...children: any[]) => DocumentFragment;
     defineElement(name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions): void;
     deepCopy: <T>(value: T) => T;
+    inject: <T extends new (...args: any[]) => any>(classType: T) => InstanceType<T>;
     Fragment: string;
   };
 
@@ -65,7 +66,7 @@ declare global {
   interface HTMLComponent {
     style?: StyleProperties;
     ref?: HTMLElement;
-    children?: HTMLElement[];
+    children?: HTMLElement[] | HTMLElement | string | ref<string>;
     className?: string | ref<string>;
     [key: string]: any;
     onclick?: (event: MouseEvent) => void;
@@ -142,11 +143,6 @@ declare global {
     public static forEach<T = any>(items: refList<T>, callbackfn: (value: T, index: number) => HTMLElement): Fragment;
     public static condition(condition: () => any, references: any[]): HTMLElement;
   }
-
-  //interface Component<P = {}, S = {}, SS = any> { }
-  //class Component<P, S> {
-
-  //}
 
   type JSXElementConstructor<P> =
     | ((
