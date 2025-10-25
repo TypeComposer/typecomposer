@@ -345,8 +345,13 @@ Object.defineProperty(Element.prototype, "extendedStyle", {
   configurable: true,
 });
 
+const controllerInjects = new Map<any, any>();
+
 const TypeComposer = {
   defineElement(name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions): void {
+    if (customElements.get(name)) {
+      return;
+    }
     Component.mergeVariant(constructor, Object.getPrototypeOf(constructor.prototype).constructor);
     customElements.define(name, constructor, options);
   },
@@ -359,7 +364,7 @@ const TypeComposer = {
         for (const child of children) {
           if (Array.isArray(child)) {
             fragment.append(...child);
-          } else if (child instanceof Node) {
+          } else if (child instanceof Node || typeof child === "string") {
             fragment.append(child);
           }
         }
@@ -414,6 +419,14 @@ const TypeComposer = {
     const fragment = document.createDocumentFragment();
     fragment.append(...children);
     return fragment;
+  },
+  inject: <T extends new (...args: any[]) => any>(classType: T): InstanceType<T> => {
+    if (controllerInjects.has(classType)) {
+      return controllerInjects.get(classType);
+    }
+    const instance = new classType();
+    controllerInjects.set(classType, instance);
+    return instance;
   },
   deepCopy: deepCopy,
   computed: computed,
