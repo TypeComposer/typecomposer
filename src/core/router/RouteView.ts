@@ -16,12 +16,11 @@ export class RouteView extends Component {
   #defaultView: ComponentType | undefined = undefined;
   #defaultComponent: IComponent | undefined = undefined;
 
-
   constructor(
     props?: ElementType & {
       defaultView?: ComponentType;
       onUpdateView?: (view?: IComponent) => void;
-    },
+    }
   ) {
     super();
     this.#defaultView = props?.defaultView;
@@ -29,7 +28,7 @@ export class RouteView extends Component {
     delete props?.children;
     Component.applyProps(this, props);
     this.onEvent("router:watch", () => {
-      this.updateView()
+      this.updateView();
       props?.onUpdateView?.(this.view);
     });
   }
@@ -54,8 +53,7 @@ export class RouteView extends Component {
     // @ts-ignore
     const routePage = Router.getRouteViewFree(this);
     if (routePage == undefined) {
-      if (this.routePage)
-        this.routePage.routeView = undefined;
+      if (this.routePage) this.routePage.routeView = undefined;
       this.view = undefined;
       this.routePage = undefined;
       return;
@@ -67,12 +65,11 @@ export class RouteView extends Component {
     }
     if (routePage.component instanceof Function && routePage.component.prototype instanceof Element) {
       // @ts-ignore
-      routePage.build = routePage.build || new routePage.component!();
-    }
-    else if (!routePage.build) {
+      routePage.build = routePage.build || new routePage.component!(routePage.props || {});
+    } else if (!routePage.build) {
       // @ts-ignore
       const mod = await routePage.component();
-      routePage.build = new mod.default;
+      routePage.build = new mod.default(routePage.props || {});
     }
 
     this.routePage = routePage;
@@ -91,7 +88,8 @@ export class RouteView extends Component {
 
   set view(value: IComponent | undefined) {
     if (!value && this.#defaultView) {
-      value = this.#defaultComponent || new this.#defaultView;
+      // @ts-ignore
+      value = this.#defaultComponent || new this.#defaultView();
       this.#defaultComponent = value;
     }
     if (this._view == value) return;

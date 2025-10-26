@@ -82,7 +82,7 @@ function build() {
   // executar o tsc -p tsconfig.json
   execSync("tsc -p tsconfig.json", { stdio: "inherit" });
   // executar o comando de minificação
-  execSync("npm run minify", { stdio: "inherit" });
+  // execSync("npm run minify", { stdio: "inherit" });
 }
 
 if (require.main === module) {

@@ -3,10 +3,12 @@ import { App, DivElement } from "../../";
 import { RouterGuard } from "./RouterGuard";
 
 export type RouterHistoryMode = "history" | "hash" | "memory" | "static" | "abstract";
+export type ElementFactory = (...args: any[]) => HTMLElement;
 
 export interface RoutePage {
   path: string;
-  component?: ComponentType | AsyncComponentLoader;
+  props?: { [key: string]: any };
+  component?: ComponentType | AsyncComponentLoader | ElementFactory;
   children?: RoutePage[];
   redirect?: string;
   title?: string;
@@ -23,6 +25,7 @@ interface RoutePageBuild extends RoutePage {
 interface RouteMatch {
   url: string;
   path: string;
+  props: { [key: string]: any };
   routers: RoutePageBuild[];
   params: Record<string, string>;
 }
@@ -35,7 +38,7 @@ function getRoutePairs(routes: any[], basePath: string = "", parentRouters: any[
 
     const routers = [...parentRouters];
     if (route.component || route.redirect) {
-      routers.push({ component: route.component, path: route.path, id: route.id, guard: route.guard, redirect: route.redirect, title: route.title });
+      routers.push({ component: route.component, props: route.props, path: route.path, id: route.id, guard: route.guard, redirect: route.redirect, title: route.title });
     }
     result.push({ path: fullPath, routers, isChild: route.isChild });
 
@@ -72,20 +75,23 @@ function getRouterParams(route: any, url: URL): Record<string, string> {
   return params;
 }
 
-function matchRoute(url: URL, routes: any[]): RouteMatch | null {
+function matchRoute(url: URL, routes: RouteOutput[]): RouteMatch | null {
   for (const route of routes) {
     if (validateRoutePattern(route, url.pathname)) {
       return {
         url: url.pathname,
         path: url.pathname,
+        // @ts-ignore
         routers: route.routers.map((r) => ({
           component: r.component,
           path: r.path,
           guard: r.guard,
           title: r.title,
+          props: r.props || {},
           redirect: r.redirect,
           build: undefined,
         })),
+        props: route.props || {},
         params: getRouterParams(route, url),
       };
     }
@@ -181,15 +187,19 @@ export class Router {
     }
 
     const url = new URL("http://localhost" + urlPath);
-    console.log("Routing to URL:", url.href);
     this.url = url.pathname;
     this.buildRoutePage(matchRoute(url, this.routes));
+  }
+
+  private isAsync(fn: Function): boolean {
+    return fn.constructor.name === "AsyncFunction";
   }
 
   private async buildRoutePage(match: RouteMatch | null): Promise<void> {
     let title = "";
     this.#props = match?.params || {};
     if (!match || !match.routers.length) {
+      // @ts-ignore
       App.setPage(this.pageNotFound ? new this.pageNotFound() : pageNotFound());
       this.match = null;
     } else {
@@ -214,13 +224,13 @@ export class Router {
       }
       const buildRoot = match.routers[0];
       if (!buildRoot.build && buildRoot.component) {
-        if (typeof buildRoot.component === "function" && buildRoot.component.prototype instanceof Node) {
-          // Component is a constructor
-          buildRoot.build = App.setPage(new (buildRoot.component as ComponentType)());
-        } else if (typeof buildRoot.component === "function") {
-          // Component is an async loader
+        if (typeof buildRoot.component === "function" && this.isAsync(buildRoot.component)) {
           const mod = await (buildRoot.component as AsyncComponentLoader)();
-          buildRoot.build = App.setPage(new (mod.default as ComponentType)());
+          // @ts-ignore
+          buildRoot.build = App.setPage(new (mod.default as ComponentType)(buildRoot.props || {}));
+        } else if (typeof buildRoot.component === "function") {
+          // @ts-ignore
+          buildRoot.build = App.setPage(new (buildRoot.component as ComponentType)(buildRoot.props || {}));
         }
       }
     }

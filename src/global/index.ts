@@ -356,7 +356,6 @@ const TypeComposer = {
     customElements.define(name, constructor, options);
   },
   createElement: (tag: any, props: any, ...children: any[]): any => {
-    console.log("createElement", { tag });
     const isComponent = tag?.prototype instanceof Node;
     if (typeof tag === "string" || isComponent) {
       if (tag === "fragment") {
@@ -395,7 +394,6 @@ const TypeComposer = {
       if (refKey) refKey(el);
       Component.applyProps(el, ElementType);
       const appendChild = (parent: Element, child: any) => {
-        console.log("appendChild", parent, child, " is ", child instanceof Node);
         if (child instanceof ref) {
           // @ts-ignore
           parent.append(child);
