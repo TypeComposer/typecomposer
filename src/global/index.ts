@@ -1,6 +1,6 @@
 import "./safari-polyfill";
 import { EventComponent, EventHandler } from "../core/event";
-import { ElementType, computed, InputElement, ref, RefBoolean, refBoolean, RefList, RefMap, RefNumber, RefSet, RefString, refString, StyleProperties } from "../";
+import { ElementType, computed, InputElement, ref, RefBoolean, refBoolean, RefList, RefMap, RefNumber, RefSet, RefString, refString, StyleProperties, InjectedType } from "../";
 
 function deepCopy<T>(obj: T, cache = new WeakMap()): T {
   // @ts-ignore
@@ -298,6 +298,7 @@ function deepCopy<T>(obj: T, cache = new WeakMap()): T {
 //     });
 // }
 const styleRef = Symbol("styleRef");
+const parentComponentSymbol = Symbol("parentComponent");
 const variantAll = Symbol("variantAll");
 const variants = new Map<ComponentType, Map<string, (element?: IComponent) => void>>();
 const mergeVariants = new Map<ComponentType, Map<string | typeof variantAll, ComponentType>>();
@@ -346,6 +347,7 @@ Object.defineProperty(Element.prototype, "extendedStyle", {
 });
 
 const controllerInjects = new Map<any, any>();
+const injectService = Symbol("injectService");
 
 const TypeComposer = {
   defineElement(name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions): void {
@@ -357,6 +359,10 @@ const TypeComposer = {
   },
   createElement: (tag: any, props: any, ...children: any[]): any => {
     const isComponent = tag?.prototype instanceof Node;
+    const parentElement = props?.[TypeComposer.parentComponentSymbol];
+    if (props) {
+      delete props[TypeComposer.parentComponentSymbol];
+    }
     if (typeof tag === "string" || isComponent) {
       if (tag === "fragment") {
         const fragment = document.createDocumentFragment();
@@ -379,7 +385,7 @@ const TypeComposer = {
       const style = props?.style;
       const refKey = props?.ref;
       const className = props?.className || props?.class;
-
+ 
       delete props?.className;
       delete props?.class;
       delete props?.onInit;
@@ -388,12 +394,17 @@ const TypeComposer = {
       if (style) props.style = {};
       const ElementType: { [key: string]: any } = props || {};
       const el = isComponent ? new tag(ElementType) : document.createElement(tag);
+      el[parentComponentSymbol] = parentElement;
       if (isValideKey) key.controller.setCache(key.key, el);
       if (style) el.setStyle(style);
       if (className) el.addClassName(className);
       if (refKey) refKey(el);
       Component.applyProps(el, ElementType);
       const appendChild = (parent: Element, child: any) => {
+        if (child === null || child === undefined) return;
+        if (child instanceof Function) {
+          child = child();
+        }
         if (child instanceof ref) {
           // @ts-ignore
           parent.append(child);
@@ -418,17 +429,54 @@ const TypeComposer = {
     fragment.append(...children);
     return fragment;
   },
-  inject: <T extends new (...args: any[]) => any>(classType: T): InstanceType<T> => {
-    if (controllerInjects.has(classType)) {
-      return controllerInjects.get(classType);
+  inject: <T extends new (...args: any[]) => any>(classType: T, type: InjectedType = InjectedType.ROOT, component?: Component, variantName?: string): InstanceType<T> => {
+    if (type === InjectedType.ROOT) {
+      if (controllerInjects.has(classType)) {
+        return controllerInjects.get(classType);
+      }
+      const instance = new classType();
+      controllerInjects.set(classType, instance);
+      return instance;
+    } else if (type === InjectedType.SELF) {
+       const instance = new classType();
+       if (component) {
+        if (!component[injectService]) {
+        component[injectService] = new Map<any, any>();
+        }
+        component[injectService].set(classType, instance);
+       }
+       return instance;
+    } else {
+       const findInject = (comp: Component) => {
+        if (!comp) return null;
+         const instance = comp[injectService]?.get(classType);
+         if (instance) return instance;
+         return findInject(comp[parentComponentSymbol]);
+      };
+      const instance = findInject(component!);
+      if (instance && variantName && component) {
+       Object.defineProperty(component, variantName, {
+        value: instance,
+        writable: false,
+        enumerable: true,
+        configurable: true,
+      });
+      }
+      return instance;
     }
-    const instance = new classType();
-    controllerInjects.set(classType, instance);
-    return instance;
   },
   deepCopy: deepCopy,
   computed: computed,
+  injectTemplate: (element: Component) => {
+      if (element && element?.template && typeof element.template === "function") {
+          const templateResult = element.template();
+          if (templateResult) {
+              element.append(templateResult);
+          }
+      }
+  },
   Fragment: "fragment",
+  parentComponentSymbol: parentComponentSymbol,
 };
 
 (globalThis as any).TypeComposer = TypeComposer;
@@ -442,7 +490,6 @@ export type AsyncComponentResolveResult<T = Component> =
 export type AsyncComponentLoader<T = any> = () => Promise<AsyncComponentResolveResult<T>>;
 
 export const componentProps = Symbol("componentProps");
-// const componentStyle = Symbol("componentStyle");
 
 export class Component extends HTMLElement implements IComponent {
   static readonly TAG: string = "tc-component";
@@ -534,12 +581,12 @@ export class Component extends HTMLElement implements IComponent {
   public static initComponent(thisObj: any, constructorObj: any, props?: ElementType): void {
     if (thisObj.constructor === constructorObj) {
       Component.applyProps(thisObj, thisObj[componentProps] || props);
-      if (thisObj?.template && typeof thisObj.template === "function") {
-        const templateResult = thisObj.template();
-        if (templateResult) {
-          thisObj.append(templateResult);
-        }
-      }
+      // if (thisObj?.template && typeof thisObj.template === "function") {
+      //   const templateResult = thisObj.template();
+      //   if (templateResult) {
+      //     thisObj.append(templateResult);
+      //   }
+      // }
       thisObj?.onInit();
       if (thisObj[componentProps]) delete thisObj[componentProps];
       return;
@@ -665,58 +712,6 @@ const originalConsoleInfo = console.info;
 console.info = function (message?: any, ...optionalParams: any[]) {
   consolecheck(originalConsoleInfo, message, ...optionalParams);
 };
-
-// function deepCopy<T>(obj: T, cache = new WeakMap()): T {
-// 	if (obj instanceof ref) {
-// 		// @ts-ignore
-// 		obj = obj.valueOf();
-// 	}
-// 	if (obj === null || typeof obj !== "object")
-// 		return obj;
-// 	if (cache.has(obj))
-// 		return cache.get(obj);
-// 	if (obj instanceof HTMLElement)
-// 		return obj;
-// 	if (Array.isArray(obj)) {
-// 		const clonedArray = obj.map((item) => deepCopy(item, cache)) as unknown as T;
-// 		cache.set(obj, clonedArray);
-// 		return clonedArray;
-// 	}
-// 	if (obj instanceof Date)
-// 		return new Date(obj) as unknown as T;
-// 	if (obj instanceof RegExp)
-// 		return new RegExp(obj) as unknown as T;
-// 	if (obj instanceof Map) {
-// 		const clonedMap = new Map();
-// 		cache.set(obj, clonedMap);
-// 		for (const [key, value] of obj) {
-// 			clonedMap.set(deepCopy(key, cache), deepCopy(value, cache));
-// 		}
-// 		return clonedMap as unknown as T;
-// 	}
-// 	if (obj instanceof Set) {
-// 		const clonedSet = new Set();
-// 		cache.set(obj, clonedSet);
-// 		for (const value of obj) {
-// 			clonedSet.add(deepCopy(value, cache));
-// 		}
-// 		return clonedSet as unknown as T;
-// 	}
-// 	if (typeof obj === "function") {
-// 		return obj;
-// 	}
-// 	if (typeof obj === "object" && Object.getPrototypeOf(obj) === null) {
-// 		return obj;
-// 	}
-// 	const clonedObj = Object.create(Object.getPrototypeOf(obj));
-// 	cache.set(obj, clonedObj);
-// 	for (const key of [...Object.keys(obj), ...Object.getOwnPropertySymbols(obj)]) {
-// 		(clonedObj as any)[key] = deepCopy((obj as any)[key], cache);
-// 	}
-// 	if (Object.isFrozen(obj)) Object.freeze(clonedObj);
-// 	if (Object.isSealed(obj)) Object.seal(clonedObj);
-// 	return clonedObj as T;
-// }
 
 WeakRef.prototype.equals = function (value: WeakRef<any>) {
   return this.deref() === value.deref();
@@ -1018,7 +1013,7 @@ Object.defineProperty(Element.prototype, "onDisconnected", {
   enumerable: true,
 });
 
-Object.defineProperty(Element.prototype, "unmount", {
+Object.defineProperty(Element.prototype, "onCreate", {
   value: function () {},
   writable: true,
   configurable: true,
@@ -1114,11 +1109,6 @@ Object.defineProperty(Element.prototype, "deleteEvent", {
   enumerable: true,
 });
 
-const originalAppend = Element.prototype.append;
-
-// symb
-const REF_MUTATION = Symbol("RefMutation");
-
 class RefElementObserver {
   index: number = -1;
   head?: HTMLElement;
@@ -1170,38 +1160,6 @@ class RefElementObserver {
   }
 }
 
-class RefMutationObserver extends MutationObserver {
-  observers = new Map<ref, RefElementObserver>();
-  data: RefElementObserver;
-
-  constructor(private element: HTMLElement) {
-    super((mutations) => {
-      for (const m of mutations) {
-        m.addedNodes.forEach((n) => {
-          // console.log('Filho adicionado:', n);
-        });
-        m.removedNodes.forEach((n) => {
-          // console.log('Filho removido:', n);
-        });
-      }
-    });
-    this.observe(this.element, { childList: true });
-    this.element[REF_MUTATION] = this;
-  }
-
-  appendRef(node: ref) {
-    this.data = new RefElementObserver(this.element, node);
-    this.observers.set(node, this.data);
-  }
-
-  disconnect(): void {
-    super.disconnect();
-    for (const [_node, data] of this.observers) {
-      data.disconnect();
-    }
-  }
-}
-
 function replaceElements(parentNode: HTMLElement, start: Comment, end: Comment, newElements: (HTMLElement | string)[]): void {
   const childNodes = Array.from(parentNode.childNodes);
   const startIndex = childNodes.indexOf(start);
@@ -1232,9 +1190,17 @@ function replaceElements(parentNode: HTMLElement, start: Comment, end: Comment, 
     if (act === "insert") parentNode.insertBefore(element, before);
   }
 }
-
+const originalAppend = Element.prototype.append;
 // append
 Element.prototype.append = function (...nodes: (Node | string | ref)[]) {
+  for (const node of nodes) {
+    if (node instanceof Element && !node[parentComponentSymbol]) {
+      // @ts-ignore
+      node[parentComponentSymbol] = this;
+      // @ts-ignore
+      node.onCreate?.();
+    }
+  }
   const isRef = nodes.find((node) => node instanceof ref);
   if (isRef) {
     for (const n of nodes) {
@@ -1250,6 +1216,19 @@ Element.prototype.append = function (...nodes: (Node | string | ref)[]) {
     }
   } else originalAppend.call(this, ...nodes);
 };
+// appendChild
+const originalAppendChild = Element.prototype.appendChild;
+
+
+Element.prototype.appendChild = function <T extends Node>(node: T): T {
+  if (node instanceof Element && !node[parentComponentSymbol]) {
+    // @ts-ignore
+    node[parentComponentSymbol] = this;
+    // @ts-ignore
+    node.onCreate?.();
+  }
+  return originalAppendChild.call(this, node);
+}
 
 Window.prototype.getTheme = function (): string {
   return localStorage.getItem("theme") || "light";

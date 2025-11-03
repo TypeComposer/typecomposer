@@ -30,6 +30,8 @@ export type ComponentMethods<T> = Omit<
   | "translate"
   | "contentEditable"
   | "onInit"
+  | "parentElement"
+  | "parentNode"
 > & {
   id?: refString;
   title?: refString;

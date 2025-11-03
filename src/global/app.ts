@@ -100,10 +100,8 @@ export class __App__ {
     if (page instanceof HTMLBodyElement) {
       document.body = page;
     } else {
-      const fragment = document.createDocumentFragment();
-      fragment.appendChild(page);
       if (!document.body) document.body = document.createElement("body");
-      document.body.appendChild(fragment);
+      document.body.appendChild(page);
     }
     this.component = page;
     return page;

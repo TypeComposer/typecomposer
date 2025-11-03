@@ -257,7 +257,7 @@ declare global {
     key: string | symbol;
     readonly extendedStyle: ExtendedStyleToken;
     onInit(): void;
-    unmount(): void;
+    onCreate(): void;
     template(): HTMLElement;
     append(...nodes: (Node | string | ref)[]): void;
     addClassName(...names: string[]): void;
@@ -280,6 +280,9 @@ declare global {
 
   interface IComponent extends HTMLElement {
     innerHTML: refString | refNumber | IComponent;
+    onCreate(): void;
+    onInit(): void;
+    template(): HTMLElement;
   }
 
   interface IComponentConstructor {
