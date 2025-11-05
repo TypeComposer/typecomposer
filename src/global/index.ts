@@ -366,6 +366,8 @@ const TypeComposer = {
     if (typeof tag === "string" || isComponent) {
       if (tag === "fragment") {
         const fragment = document.createDocumentFragment();
+        fragment['onCreate'] = props?.onCreate || (() => {});
+        fragment[parentComponentSymbol] = parentElement;
         for (const child of children) {
           if (Array.isArray(child)) {
             fragment.append(...child);
@@ -430,6 +432,9 @@ const TypeComposer = {
     return fragment;
   },
   inject: <T extends new (...args: any[]) => any>(classType: T, type: InjectedType = InjectedType.ROOT, component?: Component, variantName?: string): InstanceType<T> => {
+    if (!TypeComposer.injectServices.has(classType)) {
+      throw new Error(`Service ${classType.name} is not registered. Please use the @Service decorator to register it.`);
+    }
     if (type === InjectedType.ROOT) {
       if (controllerInjects.has(classType)) {
         return controllerInjects.get(classType);
@@ -477,6 +482,7 @@ const TypeComposer = {
   },
   Fragment: "fragment",
   parentComponentSymbol: parentComponentSymbol,
+  injectServices: new Set<any>(),
 };
 
 (globalThis as any).TypeComposer = TypeComposer;
@@ -1194,7 +1200,7 @@ const originalAppend = Element.prototype.append;
 // append
 Element.prototype.append = function (...nodes: (Node | string | ref)[]) {
   for (const node of nodes) {
-    if (node instanceof Element && !node[parentComponentSymbol]) {
+    if (node instanceof Node && !node[parentComponentSymbol]) {
       // @ts-ignore
       node[parentComponentSymbol] = this;
       // @ts-ignore
@@ -1216,9 +1222,21 @@ Element.prototype.append = function (...nodes: (Node | string | ref)[]) {
     }
   } else originalAppend.call(this, ...nodes);
 };
-// appendChild
-const originalAppendChild = Element.prototype.appendChild;
 
+const originalAppendFragment = DocumentFragment.prototype.append;
+DocumentFragment.prototype.append = function (...nodes: (Node | string | ref)[]) {
+  for (const node of nodes) {
+    if (node instanceof Node && !node[parentComponentSymbol]) {
+      // @ts-ignore
+      node[parentComponentSymbol] = this;
+      // @ts-ignore
+      node.onCreate?.();
+    }
+  }
+ originalAppendFragment.call(this, ...nodes);
+};
+
+const originalAppendChild = Element.prototype.appendChild;
 
 Element.prototype.appendChild = function <T extends Node>(node: T): T {
   if (node instanceof Element && !node[parentComponentSymbol]) {

@@ -69,6 +69,8 @@ declare global {
     children?: HTMLElement[] | HTMLElement | string | ref<string>;
     className?: string | ref<string>;
     [key: string]: any;
+    onInit?: () => void;
+    onCreate?: () => void;
     onclick?: (event: MouseEvent) => void;
     onabort?: (event: UIEvent) => void;
     onauxclick?: (event: MouseEvent) => void;
@@ -177,7 +179,7 @@ declare global {
 
     interface IntrinsicElements {
       [elemName: string]: HTMLComponent;
-      fragment: { [elemName: string]: HTMLComponent };
+      fragment: { onCreate?: () => void; onInit?: () => void;};
     }
   }
 

@@ -29,7 +29,6 @@ export type ComponentMethods<T> = Omit<
   | "children"
   | "translate"
   | "contentEditable"
-  | "onInit"
   | "parentElement"
   | "parentNode"
 > & {
@@ -49,6 +48,7 @@ export type ComponentMethods<T> = Omit<
   innerText?: refString | refNumber | refBoolean | Node;
   ref?: HTMLElement;
   onInit?: () => void;
+  onCreate?: () => void;
 };
 
 export type ElementType<T = HTMLElement, K extends keyof any = ""> = Omit<{ style?: StyleProperties } & ComponentMethods<T>, K>;
