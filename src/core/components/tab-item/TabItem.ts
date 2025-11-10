@@ -1,4 +1,4 @@
-import { Component, H3Element, H4Element, IconElement } from "..";
+import { Component, H3Element, H4Element, IconElement } from "../..";
 
 export class TabItem extends Component {
   static readonly TAG: string = "tc-tab-item";

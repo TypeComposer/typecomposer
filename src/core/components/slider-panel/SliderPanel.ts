@@ -1,6 +1,4 @@
-import { Component, ElementType, IdiomaticElement, UListElement } from "..";
-
-
+import { Component, ElementType, IdiomaticElement, UListElement } from "../..";
 
 export class SliderPanel extends Component {
 	static readonly TAG: string = "tc-slider-panel";

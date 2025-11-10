@@ -1,4 +1,4 @@
-import { Component, ParagraphElement, SpanElement } from "..";
+import { Component, ParagraphElement, SpanElement } from "../..";
 
 export interface ITextEditFormat {
   bold?: boolean;

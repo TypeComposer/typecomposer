@@ -1,5 +1,5 @@
-import { Component, SpanElement } from "..";
-import { ElementType } from "../styles";
+import { Component, SpanElement } from "../..";
+import { ElementType } from "../../styles";
 
 export class Tooltip extends Component {
 	static readonly TAG: string = "tc-tooltip";
