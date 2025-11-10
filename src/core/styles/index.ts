@@ -43,7 +43,7 @@ export type ComponentMethods<T> = Omit<
   variant?: refString;
   itemLoading?: boolean;
   disabled?: refBoolean;
-  children?: (Node | null | undefined)[];
+  children?: (Node | null | undefined)[] | Node | string | undefined;
   innerHTML?: refString | refNumber | refBoolean | Node;
   innerText?: refString | refNumber | refBoolean | Node;
   ref?: HTMLElement;

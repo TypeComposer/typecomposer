@@ -14,7 +14,7 @@ export { FlowPanel } from "./FlowPanel";
 export { ForEach } from "./ForEach";
 export { GridPanel } from "./GridPanel";
 export { HBox } from "./HBox";
-export { LazyLoading, type LazyLoadingProps } from "./LazyLoading";
+export { LazyLoad } from "./LazyLoad";
 export { ListPanel } from "./ListPanel";
 export { PopUpButton } from "./PopUpButton";
 export { ScrollPanel } from "./ScrollPanel";

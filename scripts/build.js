@@ -13,12 +13,16 @@ const packageJson = {
   main: "index.js",
   module: "index.js",
   types: "index.d.ts",
+  type: "module",
   sideEffects: ["./global/index.js", "./core/styles/**"],
   files: ["README.md", "core", "global", "styles", "index.js", "index.d.ts", "index.js.map", "typings/index.d.ts", "assets", "translation", "LICENSE"],
   keywords: ["typecomposer"],
   preferGlobal: true,
   author: "Ezequiel",
   license: "MIT",
+  exports: {
+    ".": "./index.js",
+  },
   devDependencies: {
     "@types/node": "^24.3.3",
     csstype: "^3.1.3",
@@ -33,6 +37,7 @@ function readPackageVersion() {
   const packageJsonPath = path.resolve(__dirname, "../package.json");
   const packageJsonContent = fs.readFileSync(packageJsonPath, "utf-8");
   const packageData = JSON.parse(packageJsonContent);
+  console.log("packageData")
   packageJson.version = packageData.version;
 }
 
@@ -42,7 +47,7 @@ function writePackageJson() {
 }
 
 function copyFolders() {
-  const foldersToCopy = ["styles", "translation", "typings"];
+  const foldersToCopy = ["translation", "typings"];
   const distPath = path.resolve(__dirname, "../dist");
 
   foldersToCopy.forEach((folder) => {
@@ -81,6 +86,8 @@ function copyRecursiveSync(src, dest) {
 function build() {
   // executar o tsc -p tsconfig.json
   execSync("tsc -p tsconfig.json", { stdio: "inherit" });
+  execSync("npm run build-scss", { stdio: "inherit" });
+
   // executar o comando de minificação
   // execSync("npm run minify", { stdio: "inherit" });
 }

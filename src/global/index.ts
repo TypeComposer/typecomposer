@@ -480,6 +480,15 @@ const TypeComposer = {
           }
       }
   },
+  initComponent: function (element: Node, parent: Node) {
+     if (element instanceof Node && !element[parentComponentSymbol]) {
+        // @ts-ignore
+        element[parentComponentSymbol] = parent;
+        // @ts-ignore
+        element.onCreate?.();
+        element.childNodes.forEach((node) => TypeComposer.initComponent(node, element));
+    }
+  },
   Fragment: "fragment",
   parentComponentSymbol: parentComponentSymbol,
   injectServices: new Set<any>(),
@@ -658,14 +667,21 @@ export class Component extends HTMLElement implements IComponent {
     }
   }
 
+  /**
+   * 
+   * @param source 
+   * @param options
+   * @example  Component.lazyLoad(() => import("./MyComponent"), { props: { foo: "bar" } });
+   * @returns 
+   */
   public static lazyLoad<T extends any>(
     source: AsyncComponentLoader<T>,
     options?: {
       props?: { [key: string]: any };
-      component?: ComponentType;
+      fallback?: Component;
     }
   ): Component {
-    const component = new (options?.component || Component)();
+    const component = options?.fallback || new Component();
     source().then((module) => {
       // @ts-ignore
       const TestLazy = module.default;
@@ -1115,57 +1131,6 @@ Object.defineProperty(Element.prototype, "deleteEvent", {
   enumerable: true,
 });
 
-class RefElementObserver {
-  index: number = -1;
-  head?: HTMLElement;
-  elements: HTMLElement[] = [];
-
-  constructor(private element: HTMLElement, private node: ref) {}
-
-  set value(val: any) {
-    const oldElements = this.elements;
-    const value = this.node.valueOf();
-    if (Array.isArray(this.node)) this.elements = value;
-    else if (typeof value === "function") {
-      const result = value();
-      this.elements = Array.isArray(result) ? result : [result];
-    } else this.elements = [value];
-    if (this.index == -1) {
-      this.index = this.element.children.length;
-      this.element.append(...this.elements);
-    } else {
-      const childrens = Array.from(this.element.children);
-      this.index = childrens.findIndex((child) => child === oldElements[0]);
-      childrens.splice(this.index, oldElements.length, ...this.elements);
-      this.syncComponentWithList(childrens, this.element);
-    }
-  }
-
-  syncComponentWithList(list: Element[], element: HTMLElement) {
-    const currentChildren = Array.from(element.children);
-    currentChildren.forEach((child) => {
-      if (!list.includes(child as HTMLElement)) {
-        element.removeChild(child);
-      }
-    });
-    list.forEach((el) => {
-      // @ts-ignore
-      if (el instanceof Node && !currentChildren.includes(el)) {
-        element.appendChild(el);
-      }
-    });
-    list.forEach((el, index) => {
-      if (el instanceof Node && element.children[index] !== el) {
-        element.insertBefore(el, element.children[index] || null);
-      }
-    });
-  }
-
-  disconnect(): void {
-    this.node.unsubscribe(this, "value");
-  }
-}
-
 function replaceElements(parentNode: HTMLElement, start: Comment, end: Comment, newElements: (HTMLElement | string)[]): void {
   const childNodes = Array.from(parentNode.childNodes);
   const startIndex = childNodes.indexOf(start);
@@ -1200,11 +1165,11 @@ const originalAppend = Element.prototype.append;
 // append
 Element.prototype.append = function (...nodes: (Node | string | ref)[]) {
   for (const node of nodes) {
-    if (node instanceof Node && !node[parentComponentSymbol]) {
-      // @ts-ignore
-      node[parentComponentSymbol] = this;
-      // @ts-ignore
-      node.onCreate?.();
+    if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
+        // @ts-ignore
+        node[parentComponentSymbol] = this;
+        // @ts-ignore
+        node.onCreate?.();
     }
   }
   const isRef = nodes.find((node) => node instanceof ref);
@@ -1226,7 +1191,7 @@ Element.prototype.append = function (...nodes: (Node | string | ref)[]) {
 const originalAppendFragment = DocumentFragment.prototype.append;
 DocumentFragment.prototype.append = function (...nodes: (Node | string | ref)[]) {
   for (const node of nodes) {
-    if (node instanceof Node && !node[parentComponentSymbol]) {
+    if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
       // @ts-ignore
       node[parentComponentSymbol] = this;
       // @ts-ignore
@@ -1234,6 +1199,32 @@ DocumentFragment.prototype.append = function (...nodes: (Node | string | ref)[])
     }
   }
  originalAppendFragment.call(this, ...nodes);
+};
+
+const originalPrependFragment = DocumentFragment.prototype.prepend;
+DocumentFragment.prototype.prepend = function (...nodes: (Node | string | ref)[]) {
+  for (const node of nodes) {
+    if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
+      // @ts-ignore
+      node[parentComponentSymbol] = this;
+      // @ts-ignore
+      node.onCreate?.();
+    }
+  }
+  originalPrependFragment.call(this, ...nodes);
+};
+
+const originalPrepend = Element.prototype.prepend;
+Element.prototype.prepend = function (...nodes: (Node | string | ref)[]) {
+  for (const node of nodes) {
+    if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
+      // @ts-ignore
+      node[parentComponentSymbol] = this;
+      // @ts-ignore
+      node.onCreate?.();
+    }
+  }
+  originalPrepend.call(this, ...nodes);
 };
 
 const originalAppendChild = Element.prototype.appendChild;
@@ -1247,6 +1238,85 @@ Element.prototype.appendChild = function <T extends Node>(node: T): T {
   }
   return originalAppendChild.call(this, node);
 }
+
+const originalInsertBefore = Element.prototype.insertBefore;
+
+Element.prototype.insertBefore = function <T extends Node>(newNode: T, referenceNode: Node | null): T {
+  if (newNode instanceof Element && !newNode[parentComponentSymbol]) {
+    // @ts-ignore
+    newNode[parentComponentSymbol] = this;
+    // @ts-ignore
+    newNode.onCreate?.();
+  }
+  return originalInsertBefore.call(this, newNode, referenceNode);
+};
+
+//replaceChild
+const originalReplaceChild = Element.prototype.replaceChild;
+// @ts-ignore
+Element.prototype.replaceChild = function <T extends Node>(newChild: T, oldChild: Node): T {
+  if (newChild instanceof Element && !newChild[parentComponentSymbol]) {
+    // @ts-ignore
+    newChild[parentComponentSymbol] = this;
+    // @ts-ignore
+    newChild.onCreate?.();
+  }
+  return originalReplaceChild.call(this, newChild, oldChild);
+}
+
+// replaceWith
+const originalReplaceWith = Element.prototype.replaceWith;
+Element.prototype.replaceWith = function (...nodes: (Node | string | ref)[]) {
+  for (const node of nodes) {
+    if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
+      // @ts-ignore
+      node[parentComponentSymbol] = this.parentElement;
+      // @ts-ignore
+      node.onCreate?.();
+    }
+  }
+  originalReplaceWith.call(this, ...nodes);
+};
+
+// insertBefore
+const originalInsertAdjacentElement = Element.prototype.insertAdjacentElement;
+Element.prototype.insertAdjacentElement = function (position: InsertPosition, element: Element): Element | null {
+  if (this.isConnected && element instanceof Node && !element[parentComponentSymbol]) {
+    // @ts-ignore
+    element[parentComponentSymbol] = this;
+    // @ts-ignore
+    element.onCreate?.();
+  }
+  return originalInsertAdjacentElement.call(this, position, element);
+};
+
+// before
+const originalBefore = Element.prototype.before;
+Element.prototype.before = function (...nodes: (Node | string | ref)[]) {
+  for (const node of nodes) {
+    if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
+      // @ts-ignore
+      node[parentComponentSymbol] = this.parentElement;
+      // @ts-ignore
+      node.onCreate?.();
+    }
+  }
+  originalBefore.call(this, ...nodes);
+}
+
+// after
+const originalAfter = Element.prototype.after;
+Element.prototype.after = function (...nodes: (Node | string | ref)[]) {
+  for (const node of nodes) {
+    if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
+      // @ts-ignore
+      node[parentComponentSymbol] = this.parentElement;
+      // @ts-ignore
+      node.onCreate?.();
+    }
+  }
+  originalAfter.call(this, ...nodes);
+};
 
 Window.prototype.getTheme = function (): string {
   return localStorage.getItem("theme") || "light";

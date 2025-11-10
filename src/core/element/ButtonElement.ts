@@ -1,4 +1,5 @@
 import { ElementType, Component } from "../../";
+import "./ButtonElement.css"
 
 export class ButtonElement extends HTMLButtonElement implements IComponent {
 	static readonly TAG: string = "tc-button-element";

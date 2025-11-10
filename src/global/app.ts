@@ -98,9 +98,13 @@ export class __App__ {
     Array.from(document.body.querySelectorAll("[main-page]")).map((el) => el.remove());
     page?.setAttribute("main-page", "");
     if (page instanceof HTMLBodyElement) {
+      // @ts-ignore
+      TypeComposer.initComponent(page, undefined);
       document.body = page;
     } else {
       if (!document.body) document.body = document.createElement("body");
+      // @ts-ignore
+      TypeComposer.initComponent(page, document.body);
       document.body.appendChild(page);
     }
     this.component = page;

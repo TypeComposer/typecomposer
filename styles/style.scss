@@ -1,25 +1,26 @@
+
+
+@use "theme/themes-light.scss";
+@use "theme/themes-dark.scss";
+@use "theme/blue.scss";
+@use "theme/blue-dark.scss";
+
+@use "layers/flow-panel.scss";
+@use "layers/scroll-panel.scss";
+@use "layers/border-panel.scss";
+
+// components
+@use "components/TablePanel.scss";
+@use "components/VirtualScroll.scss";
+@use "components/AlertPanel.scss";
+@use "components/ContextMenu.scss";
+@use "components/DialogPanel.scss";
+@use "components/TextField.scss";
+@use "components/PopUpButton.scss";
+
 * {
   box-sizing: border-box;
 }
-
-@import url("theme/themes-light.scss");
-@import url("theme/themes-dark.scss");
-@import url("theme/blue.scss");
-@import url("theme/blue-dark.scss");
-
-@import url("layers/flow-panel.scss");
-@import url("layers/scroll-panel.scss");
-@import url("layers/border-panel.scss");
-
-// components
-@import url("components/TablePanel.scss");
-@import url("components/VirtualScroll.scss");
-@import url("components/AlertPanel.scss");
-@import url("components/ContextMenu.scss");
-@import url("components/DialogPanel.scss");
-@import url("components/TextField.scss");
-@import url("components/PopUpButton.scss");
-
 
 * {
   box-sizing: border-box;
