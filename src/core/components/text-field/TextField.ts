@@ -12,7 +12,7 @@ import {
   ParagraphElement,
   ElementType
 } from "../../";
-
+import "./TextField.css";
 export interface TextFieldProps extends ElementType<InputElement> {
   placeholderAnimation?: boolean;
   icon?: IconElement;
@@ -60,6 +60,7 @@ export class TextField extends Component {
   constructor(props?: TextFieldProps) {
     super();
     this.label = props?.label || "";
+    this.extendedStyle.add(TextField.TAG);
     this.customError = props?.customError;
     this.placeholderAnimation = props?.placeholderAnimation !== undefined ? props?.placeholderAnimation : true;
     this.labelError = props?.labelError !== undefined ? props?.labelError : false
@@ -70,6 +71,8 @@ export class TextField extends Component {
     delete props?.value;
     delete props?.text;
     Component.applyProps(this, props);
+    // @ts-ignore
+    Component.initComponent(this, TextField, props);
   }
 
 

@@ -148,23 +148,23 @@ declare global {
 
   type JSXElementConstructor<P> =
     | ((
-        props: P,
-        /**
-         * @deprecated
-         *
-         * @see {@link https://legacy.reactjs.org/docs/legacy-context.html#referencing-context-in-stateless-function-components React Docs}
-         */
-        deprecatedLegacyContext?: any
-      ) => ReactNode)
+      props: P,
+      /**
+       * @deprecated
+       *
+       * @see {@link https://legacy.reactjs.org/docs/legacy-context.html#referencing-context-in-stateless-function-components React Docs}
+       */
+      deprecatedLegacyContext?: any
+    ) => ReactNode)
     | (new (
-        props: P,
-        /**
-         * @deprecated
-         *
-         * @see {@link https://legacy.reactjs.org/docs/legacy-context.html#referencing-context-in-lifecycle-methods React Docs}
-         */
-        deprecatedLegacyContext?: any
-      ) => Component<any, any>);
+      props: P,
+      /**
+       * @deprecated
+       *
+       * @see {@link https://legacy.reactjs.org/docs/legacy-context.html#referencing-context-in-lifecycle-methods React Docs}
+       */
+      deprecatedLegacyContext?: any
+    ) => Component<any, any>);
 
   interface TypecomposerElement<P = any, T extends string | JSXElementConstructor<any> = string | JSXElementConstructor<any>> {
     type: T;
@@ -175,11 +175,11 @@ declare global {
   namespace JSX {
     type Element = HTMLElement;
 
-    interface Component extends TypecomposerElement<any, any> {}
+    interface Component extends TypecomposerElement<any, any> { }
 
     interface IntrinsicElements {
       [elemName: string]: HTMLComponent;
-      fragment: { onCreate?: () => void; onInit?: () => void;};
+      fragment: { onCreate?: () => void; onInit?: () => void; };
     }
   }
 
@@ -190,14 +190,14 @@ declare global {
 
   var CSSStyleDeclarationRef: {
     prototype: CSSStyleDeclarationRef;
-    new (): CSSStyleDeclarationRef;
+    new(): CSSStyleDeclarationRef;
   };
 
   interface CSSStyleDeclaration {
     parentElement: HTMLElement;
   }
 
-  interface ComponentEvent extends Event {}
+  interface ComponentEvent extends Event { }
 
   interface RouterEvent extends ComponentEvent {
     payload: Error;
@@ -289,7 +289,7 @@ declare global {
 
   interface IComponentConstructor {
     readonly TAG: string;
-    new (...args: any[]): IComponent;
+    new(...args: any[]): IComponent;
   }
 
   type ComponentType = typeof HTMLElement;
@@ -307,20 +307,20 @@ declare global {
   }
 
   interface HTMLInputElement {
-    value: refString | refNumber;
+    public value?: string | refString;
     checked: boolean | ref<boolean>;
   }
 
   interface InputElement extends HTMLInputElement {
-    value: refString | refNumber;
+    public value?: string | refString;
   }
 
   interface HTMLTextAreaElement {
-    value: refString | refNumber;
+    public value?: string | refString;
   }
 
   interface TextAreaElement extends HTMLTextAreaElement {
-    value: refString | refNumber;
+    public value?: string | refString;
   }
 
   interface HTMLImageElement {
@@ -333,11 +333,11 @@ declare global {
     toInt(radix?: number): number;
     toDate(): Date;
   }
-  interface Number extends BaseRef<number> {}
-  interface Boolean extends BaseRef<boolean> {}
-  interface Array<T> extends BaseRef<T[]> {}
-  interface Map<K, V> extends BaseRef<Map<K, V>> {}
-  interface Set<T> extends BaseRef<Set<T>> {}
+  interface Number extends BaseRef<number> { }
+  interface Boolean extends BaseRef<boolean> { }
+  interface Array<T> extends BaseRef<T[]> { }
+  interface Map<K, V> extends BaseRef<Map<K, V>> { }
+  interface Set<T> extends BaseRef<Set<T>> { }
 
   interface RequestInit {
     /** A string to set request's priority. */
@@ -370,4 +370,4 @@ declare module "*.svg" {
   export default createSvgElement;
 }
 
-export {};
+export { };

@@ -1,0 +1,217 @@
+@charset "UTF-8";
+[tc-style~=tc-text-field] input {
+  border: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline: none;
+  box-shadow: none;
+}
+[tc-style~=tc-text-field] input:focus {
+  outline: none;
+}
+[tc-style~=tc-text-field] .tc-tf-osu {
+  position: relative;
+  padding: 2px;
+  display: flex;
+  flex-direction: row;
+  height: 50px;
+}
+[tc-style~=tc-text-field] .tc-tf-osu > fieldset {
+  text-align: left;
+  position: absolute;
+  inset: -5px 0px 0px;
+  margin: 0px;
+  padding: 0px 8px;
+  pointer-events: none;
+  border-radius: inherit;
+  border-style: solid;
+  border-width: 1px;
+  overflow: hidden;
+  min-width: 0%;
+}
+[tc-style~=tc-text-field] .tc-tf-osu > fieldset > legend {
+  float: unset;
+  width: auto;
+  overflow: hidden;
+  display: block;
+  padding: 0;
+  height: 11px;
+  font-size: 0.75em;
+  visibility: hidden;
+  max-width: 0.01px;
+  margin-left: 4px;
+  -webkit-transition: max-width 200ms cubic-bezier(0, 0, 0.2, 1) 0ms;
+  transition: max-width 200ms cubic-bezier(0, 0, 0.2, 1) 0ms;
+  white-space: nowrap;
+}
+[tc-style~=tc-text-field] .tc-tf-osu > input {
+  width: -webkit-fill-available;
+  height: 100%;
+  outline: none;
+  color: var(--primary-text-color);
+  background-color: transparent;
+}
+[tc-style~=tc-text-field] .tc-tf-osu > input::placeholder {
+  color: var(--primary-text-color);
+}
+[tc-style~=tc-text-field] .tc-tf-osu > input ~ .icon {
+  position: absolute;
+  top: 0.1rem;
+  left: 1rem;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  color: var(--primary-text-color);
+  align-items: center;
+}
+[tc-style~=tc-text-field] .tc-tf-osu > label {
+  position: absolute;
+  left: 1rem;
+  cursor: text;
+  transition: top 200ms ease-in, left 200ms, font-size 200ms;
+  top: 0.8rem;
+  background: none;
+}
+[tc-style~=tc-text-field] .tc-tf-osu > input:focus ~ label,
+[tc-style~=tc-text-field] .tc-tf-osu > input:not(:placeholder-shown) ~ label {
+  top: -0.5rem;
+  left: 1.4rem;
+  font-size: 0.8rem;
+  color: var(--primary-text-color);
+  background: none;
+}
+[tc-style~=tc-text-field] .tc-tf-osu > input:focus ~ label {
+  color: var(--primary-select-color);
+}
+[tc-style~=tc-text-field] .tc-tf-osu input:focus ~ fieldset > legend {
+  max-width: 100%;
+  padding-left: 10px;
+  padding-right: 8px;
+}
+[tc-style~=tc-text-field] .tc-tf-osu input:focus ~ fieldset,
+[tc-style~=tc-text-field] .tc-tf-osu input:not(:placeholder-shown) ~ fieldset > legend {
+  max-width: 100%;
+  padding-left: 10px;
+  padding-right: 8px;
+}
+[tc-style~=tc-text-field] .tc-tf-osu > .options-container {
+  background: var(--primary-color);
+  color: var(--primary-text-color);
+  max-height: 0;
+  width: 96%;
+  opacity: 0;
+  transition: all 0.4s;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  order: 1;
+  position: absolute;
+  z-index: 100;
+  background-color: var(--primary-color);
+  left: 5px !important;
+}
+[tc-style~=tc-text-field] .tc-tf-osu > .options-container.active {
+  max-height: 240px;
+  opacity: 1;
+  right: -5px;
+  left: -5px;
+  overflow-y: scroll;
+}
+[tc-style~=tc-text-field] .tc-tf-osu > .option {
+  padding: 5px 5px;
+  padding-top: 6px;
+  cursor: pointer;
+}
+[tc-style~=tc-text-field] .tc-tf-osu > .option:hover {
+  background: #ccc;
+}
+[tc-style~=tc-text-field] .tc-tf-osu > .option .radio {
+  display: none;
+}
+[tc-style~=tc-text-field] .tc-tf-osu[variant=outline] fieldset, [tc-style~=tc-text-field] .tc-tf-osu:not([variant]) fieldset {
+  border: 1px var(--primary-border-color);
+  border-radius: 5px;
+}
+[tc-style~=tc-text-field] .tc-tf-osu[variant=outline]:focus-within fieldset, [tc-style~=tc-text-field] .tc-tf-osu:not([variant]):focus-within fieldset {
+  border: 1px var(--primary-select-color);
+  border-radius: 5px;
+}
+[tc-style~=tc-text-field] .tc-tf-osu[variant=underlined] fieldset {
+  border: none;
+  border-bottom: 1px var(--primary-border-color);
+}
+[tc-style~=tc-text-field] .tc-tf-osu[variant=underlined]:focus-within fieldset {
+  border: none;
+  border-bottom: 1px var(--primary-select-color);
+}
+[tc-style~=tc-text-field] .tc-tf-osu[variant=solo] fieldset {
+  background-color: var(--primary-color);
+  box-shadow: 3px 3px 3px 3px rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+}
+[tc-style~=tc-text-field] .tc-tf-osu[variant=solo]:focus-within fieldset {
+  background-color: var(--primary-select-color);
+}
+[tc-style~=tc-text-field] .tc-tf-osu[variant=standard] fieldset {
+  border: 1px var(--primary-border-color);
+  border-radius: 5px;
+}
+[tc-style~=tc-text-field] .tc-tf-osu[variant=standard]:focus-within fieldset {
+  background-color: var(--primary-select-color);
+}
+[tc-style~=tc-text-field] .tc-tf-osu .tc-m-e {
+  border: 1px solid red !important;
+}
+[tc-style~=tc-text-field] .tc-tf-osu input:invalid {
+  color: #e53e3e;
+}
+[tc-style~=tc-text-field] .tc-tf-osu .tc-m-e:focus {
+  border: 1px solid red !important;
+}
+[tc-style~=tc-text-field] .tc-tf-d {
+  display: block;
+  unicode-bidi: isolate;
+}
+[tc-style~=tc-text-field] .tc-tf-d input {
+  background-color: transparent;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 1px solid #dee2e6;
+  /* Cor da borda */
+  border-radius: 8px;
+  /* Bordas arredondadas */
+  outline: none;
+  transition: border-color 0.2s ease-in-out;
+}
+[tc-style~=tc-text-field] .tc-tf-d input::placeholder {
+  color: #dee2e6;
+  /* Cor do placeholder */
+  font-size: 16px;
+}
+[tc-style~=tc-text-field] .tc-tf-d input:focus {
+  border-color: #a0aec0;
+  /* Mudança na borda ao focar */
+}
+[tc-style~=tc-text-field] .tc-tf-d label {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  color: rgb(47, 50, 55);
+}
+[tc-style~=tc-text-field] .tc-tf-d input:invalid:not(:placeholder-shown) {
+  border-color: #e53e3e;
+  color: #e53e3e;
+}
+[tc-style~=tc-text-field] .tc-tf-d input:invalid:not(:placeholder-shown)::placeholder {
+  color: #e53e3e;
+}
+[tc-style~=tc-text-field] .tc-tf-d input:focus:invalid:not(:placeholder-shown) {
+  outline: none;
+  border-color: #c53030;
+  box-shadow: 0 0 5px rgba(229, 62, 62, 0.5);
+}
+
+/*# sourceMappingURL=TextField.css.map */

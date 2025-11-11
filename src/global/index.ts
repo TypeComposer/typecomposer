@@ -596,12 +596,6 @@ export class Component extends HTMLElement implements IComponent {
   public static initComponent(thisObj: any, constructorObj: any, props?: ElementType): void {
     if (thisObj.constructor === constructorObj) {
       Component.applyProps(thisObj, thisObj[componentProps] || props);
-      // if (thisObj?.template && typeof thisObj.template === "function") {
-      //   const templateResult = thisObj.template();
-      //   if (templateResult) {
-      //     thisObj.append(templateResult);
-      //   }
-      // }
       thisObj?.onInit();
       if (thisObj[componentProps]) delete thisObj[componentProps];
       return;

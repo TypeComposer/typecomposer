@@ -44,7 +44,7 @@ export class InputElement extends HTMLInputElement implements IComponent {
   static readonly TAG: string = "tc-input-element";
   //   #validation?: RegisterOptions;
   //   #checkValidity;
-  constructor(props?: ElementType<InputElement, "checked" | "value">) {
+  constructor(props?: ElementType<InputElement, 'value'> & { value?: string | refString; }) {
     super();
     if (props?.accept) this.accept = props.accept;
     this.multiple = props?.multiple || false;

@@ -20,9 +20,9 @@ const packageJson = {
   preferGlobal: true,
   author: "Ezequiel",
   license: "MIT",
-  exports: {
-    ".": "./index.js",
-  },
+  // exports: {
+  //   ".": "./index.js",
+  // },
   devDependencies: {
     "@types/node": "^24.3.3",
     csstype: "^3.1.3",
@@ -83,6 +83,21 @@ function copyRecursiveSync(src, dest) {
   }
 }
 
+function copyCssFiles(src, dest) {
+  fs.readdirSync(src, { withFileTypes: true }).forEach((entry) => {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+
+    if (entry.isDirectory()) {
+      copyCssFiles(srcPath, destPath);
+    } else if (entry.isFile() && entry.name.endsWith('.css')) {
+      fs.mkdirSync(path.dirname(destPath), { recursive: true });
+      fs.copyFileSync(srcPath, destPath);
+    }
+  });
+}
+
+
 function build() {
   // executar o tsc -p tsconfig.json
   execSync("tsc -p tsconfig.json", { stdio: "inherit" });
@@ -95,6 +110,7 @@ function build() {
 if (require.main === module) {
   build();
   copyFolders();
+  copyCssFiles('src', 'dist');
   readPackageVersion();
   writePackageJson();
 }

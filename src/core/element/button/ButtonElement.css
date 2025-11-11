@@ -1,4 +1,4 @@
-button {
+[tc-style~=tc-button-element] {
     border: none;
     color: white;
     padding: 16px 32px;
@@ -9,4 +9,5 @@ button {
     margin: 4px 2px;
     transition-duration: 0.4s;
     cursor: pointer;
+    background-color: #4CAF50;
 }
