@@ -16,6 +16,7 @@ export { LazyLoad } from "./lazy-load/LazyLoad";
 export { ListPanel } from "./list-panel/ListPanel";
 export { PopUpButton } from "./pop-up-button/PopUpButton";
 export { ScrollPanel } from "./scroll-panel/ScrollPanel";
+export { SelectPanel } from "./select-panel/SelectPanel";
 // Missing
 export { StackPanel } from "./stack-panel/StackPanel";
 // export { TablePanel } from "./table-panel/TablePanel.tsClose";

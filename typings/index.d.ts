@@ -1,4 +1,5 @@
 import type * as CSS from "csstype";
+import { refString } from "src";
 
 type ref<T = any> = {
   value: refObject<T>;
@@ -62,6 +63,8 @@ declare global {
   };
 
   type TypeComposer = typeof TypeComposer;
+
+  function C(fn: TemplateStringsArray, ...values: any[]): refString;
 
   interface HTMLComponent {
     style?: StyleProperties;

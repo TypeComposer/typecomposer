@@ -11,6 +11,7 @@ class ComputedSet extends Set<refType> {
       this.add(item);
       return item.value;
     }
+    return item;
   }
 
   cache(key: string) {

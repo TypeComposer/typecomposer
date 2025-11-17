@@ -366,7 +366,7 @@ const TypeComposer = {
     if (typeof tag === "string" || isComponent) {
       if (tag === "fragment") {
         const fragment = document.createDocumentFragment();
-        fragment['onCreate'] = props?.onCreate || (() => {});
+        fragment['onCreate'] = props?.onCreate || (() => { });
         fragment[parentComponentSymbol] = parentElement;
         for (const child of children) {
           if (Array.isArray(child)) {
@@ -387,7 +387,7 @@ const TypeComposer = {
       const style = props?.style;
       const refKey = props?.ref;
       const className = props?.className || props?.class;
- 
+
       delete props?.className;
       delete props?.class;
       delete props?.onInit;
@@ -443,29 +443,29 @@ const TypeComposer = {
       controllerInjects.set(classType, instance);
       return instance;
     } else if (type === InjectedType.SELF) {
-       const instance = new classType();
-       if (component) {
+      const instance = new classType();
+      if (component) {
         if (!component[injectService]) {
-        component[injectService] = new Map<any, any>();
+          component[injectService] = new Map<any, any>();
         }
         component[injectService].set(classType, instance);
-       }
-       return instance;
+      }
+      return instance;
     } else {
-       const findInject = (comp: Component) => {
+      const findInject = (comp: Component) => {
         if (!comp) return null;
-         const instance = comp[injectService]?.get(classType);
-         if (instance) return instance;
-         return findInject(comp[parentComponentSymbol]);
+        const instance = comp[injectService]?.get(classType);
+        if (instance) return instance;
+        return findInject(comp[parentComponentSymbol]);
       };
       const instance = findInject(component!);
       if (instance && variantName && component) {
-       Object.defineProperty(component, variantName, {
-        value: instance,
-        writable: false,
-        enumerable: true,
-        configurable: true,
-      });
+        Object.defineProperty(component, variantName, {
+          value: instance,
+          writable: false,
+          enumerable: true,
+          configurable: true,
+        });
       }
       return instance;
     }
@@ -473,20 +473,20 @@ const TypeComposer = {
   deepCopy: deepCopy,
   computed: computed,
   injectTemplate: (element: Component) => {
-      if (element && element?.template && typeof element.template === "function") {
-          const templateResult = element.template();
-          if (templateResult) {
-              element.append(templateResult);
-          }
+    if (element && element?.template && typeof element.template === "function") {
+      const templateResult = element.template();
+      if (templateResult) {
+        element.append(templateResult);
       }
+    }
   },
   initComponent: function (element: Node, parent: Node) {
-     if (element instanceof Node && !element[parentComponentSymbol]) {
-        // @ts-ignore
-        element[parentComponentSymbol] = parent;
-        // @ts-ignore
-        element.onCreate?.();
-        element.childNodes.forEach((node) => TypeComposer.initComponent(node, element));
+    if (element instanceof Node && !element[parentComponentSymbol]) {
+      // @ts-ignore
+      element[parentComponentSymbol] = parent;
+      // @ts-ignore
+      element.onCreate?.();
+      element.childNodes.forEach((node) => TypeComposer.initComponent(node, element));
     }
   },
   Fragment: "fragment",
@@ -495,12 +495,13 @@ const TypeComposer = {
 };
 
 (globalThis as any).TypeComposer = TypeComposer;
+(globalThis as any).C = computed;
 
 export type AsyncComponentResolveResult<T = Component> =
   | T
   | {
-      default: T;
-    };
+    default: T;
+  };
 
 export type AsyncComponentLoader<T = any> = () => Promise<AsyncComponentResolveResult<T>>;
 
@@ -586,7 +587,7 @@ export class Component extends HTMLElement implements IComponent {
               try {
                 (element as any)[key] = propValue;
                 if (propValue === undefined) (element as any).removeAttribute(key);
-              } catch {}
+              } catch { }
             }
         }
       }
@@ -734,7 +735,7 @@ WeakRef.prototype.equals = function (value: WeakRef<any>) {
 };
 
 Object.defineProperty(Element.prototype, "onInit", {
-  value: function () {},
+  value: function () { },
   writable: true,
   configurable: true,
   enumerable: true,
@@ -933,7 +934,7 @@ Object.defineProperty(Element.prototype, "disconnectedCallback", {
 });
 
 Object.defineProperty(window, "scoped", {
-  value: function (target: any): any {},
+  value: function (target: any): any { },
   writable: true,
   configurable: true,
   enumerable: true,
@@ -943,7 +944,7 @@ try {
   const originalButton = Object.getOwnPropertyDescriptor(HTMLButtonElement.prototype, "type").set;
 
   Object.defineProperty(HTMLButtonElement.prototype, "onfile", {
-    value: function (this: HTMLButtonElement, fileList: FileList) {},
+    value: function (this: HTMLButtonElement, fileList: FileList) { },
     writable: true,
     configurable: true,
     enumerable: true,
@@ -997,10 +998,10 @@ try {
       originalButton.call(this, value);
     },
   });
-} catch (__) {}
+} catch (__) { }
 
 Object.defineProperty(Element.prototype, "onInit", {
-  value: function () {},
+  value: function () { },
   writable: true,
   configurable: true,
   enumerable: true,
@@ -1016,21 +1017,21 @@ Object.defineProperty(Element.prototype, "getParent", {
 });
 
 Object.defineProperty(Element.prototype, "onConnected", {
-  value: function () {},
+  value: function () { },
   writable: true,
   configurable: true,
   enumerable: true,
 });
 
 Object.defineProperty(Element.prototype, "onDisconnected", {
-  value: function () {},
+  value: function () { },
   writable: true,
   configurable: true,
   enumerable: true,
 });
 
 Object.defineProperty(Element.prototype, "onCreate", {
-  value: function () {},
+  value: function () { },
   writable: true,
   configurable: true,
   enumerable: true,
@@ -1160,10 +1161,10 @@ const originalAppend = Element.prototype.append;
 Element.prototype.append = function (...nodes: (Node | string | ref)[]) {
   for (const node of nodes) {
     if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
-        // @ts-ignore
-        node[parentComponentSymbol] = this;
-        // @ts-ignore
-        node.onCreate?.();
+      // @ts-ignore
+      node[parentComponentSymbol] = this;
+      // @ts-ignore
+      node.onCreate?.();
     }
   }
   const isRef = nodes.find((node) => node instanceof ref);
@@ -1192,7 +1193,7 @@ DocumentFragment.prototype.append = function (...nodes: (Node | string | ref)[])
       node.onCreate?.();
     }
   }
- originalAppendFragment.call(this, ...nodes);
+  originalAppendFragment.call(this, ...nodes);
 };
 
 const originalPrependFragment = DocumentFragment.prototype.prepend;
@@ -1515,4 +1516,4 @@ export * from "../core/ref";
 export type App = __App__;
 export const App = new __App__();
 
-export {};
+export { };
