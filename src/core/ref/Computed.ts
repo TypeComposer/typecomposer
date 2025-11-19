@@ -52,6 +52,7 @@ export function computed<T>(fn: any, ...values: any[]): DynamicRef<T> {
   const func = () => {
     const oldObservers = observers.clone();
     observers.clear();
+    // @ts-ignore
     r.value = fn(observers);
     const observersToRemove = oldObservers.size > 0 ? [...oldObservers].filter((o) => !observers.has(o)) : [];
     const observersToAdd = observers.size > 0 ? [...observers].filter((o) => !oldObservers.has(o)) : [];

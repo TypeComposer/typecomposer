@@ -701,34 +701,37 @@ const isValideRef = (value: any) =>
     value instanceof RefList ||
     value instanceof RefMap ||
     value instanceof RefSet);
-const consolecheck = (callback: (message: any, ...optionalParams: any[]) => void, message?: any, ...optionalParams: any[]) => {
-  if (isValideRef(message)) message = message.valueOf();
-  for (let i = 0; i < optionalParams.length; i++) {
-    if (isValideRef(optionalParams[i])) {
-      optionalParams[i] = optionalParams[i].valueOf();
+
+try {
+  const consolecheck = (callback: (message: any, ...optionalParams: any[]) => void, message?: any, ...optionalParams: any[]) => {
+    if (isValideRef(message)) message = message.valueOf();
+    for (let i = 0; i < optionalParams.length; i++) {
+      if (isValideRef(optionalParams[i])) {
+        optionalParams[i] = optionalParams[i].valueOf();
+      }
     }
-  }
-  callback(message, ...optionalParams);
-};
-const originalConsoleLog = console.log;
-console.log = function (message?: any, ...optionalParams: any[]) {
-  consolecheck(originalConsoleLog, message, ...optionalParams);
-};
+    callback(message, ...optionalParams);
+  };
+  const originalConsoleLog = console.log;
+  console.log = function (message?: any, ...optionalParams: any[]) {
+    consolecheck(originalConsoleLog, message, ...optionalParams);
+  };
 
-const originalConsoleError = console.error;
-console.error = function (message?: any, ...optionalParams: any[]) {
-  consolecheck(originalConsoleError, message, ...optionalParams);
-};
+  const originalConsoleError = console.error;
+  console.error = function (message?: any, ...optionalParams: any[]) {
+    consolecheck(originalConsoleError, message, ...optionalParams);
+  };
 
-const originalConsoleWarn = console.warn;
-console.warn = function (message?: any, ...optionalParams: any[]) {
-  consolecheck(originalConsoleWarn, message, ...optionalParams);
-};
+  const originalConsoleWarn = console.warn;
+  console.warn = function (message?: any, ...optionalParams: any[]) {
+    consolecheck(originalConsoleWarn, message, ...optionalParams);
+  };
 
-const originalConsoleInfo = console.info;
-console.info = function (message?: any, ...optionalParams: any[]) {
-  consolecheck(originalConsoleInfo, message, ...optionalParams);
-};
+  const originalConsoleInfo = console.info;
+  console.info = function (message?: any, ...optionalParams: any[]) {
+    consolecheck(originalConsoleInfo, message, ...optionalParams);
+  };
+} catch (_e) { }
 
 WeakRef.prototype.equals = function (value: WeakRef<any>) {
   return this.deref() === value.deref();

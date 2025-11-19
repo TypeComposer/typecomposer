@@ -1,4 +1,5 @@
 import { type ElementType, DivElement, Component, refString } from "../..";
+import "./BorderPanel.css";
 
 export class BorderPanel extends Component {
   static readonly TAG: string = "tc-border-panel";

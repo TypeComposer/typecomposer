@@ -2,16 +2,66 @@ import { refBoolean, RefNumber, refNumber, refString, RefString, RefBoolean, Ref
 import { RefContainer } from "./RefContainer";
 import { RefSet, refSet } from "./RefSet";
 
+function convertRefValue(value: any): any {
+  if (typeof value === "string" || value instanceof String)
+    return new RefString(value.valueOf()) as any;
+  if (typeof value === "number" || value instanceof Number)
+    return new RefNumber(value.valueOf()) as any;
+  if (typeof value === "boolean" || value instanceof Boolean)
+    return new RefBoolean(value.valueOf()) as any;
+  if (value instanceof Array)
+    return new RefList(value) as any;
+  if (value instanceof Set)
+    // @ts-ignore
+    return new RefSet(value) as any;
+  if (value instanceof Map)
+    // @ts-ignore
+    return new RefMap(value) as any;
+  return value;
+}
+
+function convertObjectInObjectRefDeep(target: any) {
+  if (Object.getPrototypeOf(target) === Object.prototype) {
+    for (const key in target) {
+      try {
+        if (
+          Object.getOwnPropertyDescriptor(target, key)?.writable === false ||
+          Object.getOwnPropertyDescriptor(target, key)?.get ||
+          Object.getOwnPropertyDescriptor(target, key)?.set
+        ) {
+          continue;
+        }
+        if (target[key] === undefined || target[key] === null) {
+          continue;
+        }
+        target[key] = convertRefValue(target[key]);
+        if (target[key] instanceof ref) {
+          // @ts-ignore
+          target[key]["container"].root = this;
+        }
+        if (target[key] instanceof Object) {
+          convertObjectInObjectRefDeep(target[key]);
+        }
+      } catch (e) { }
+    }
+  }
+}
+
+class NotEmitted {
+  constructor(public value: any) { }
+
+  valueOf() {
+    return this.value;
+  }
+}
+
 class RefObjectContainer extends RefContainer {
   declare root: RefContainer;
   instance: { value: any } = { value: null };
   constructor(value: object, root?: RefContainer) {
-    super(value, root as any);
+    super(null, root as any);
     this.root = root;
-    this.value = createObservador(value, this);
-    if (isApplyProxy(value)) {
-      RefObjectContainer.createObject.bind(this)(this.value, value, this);
-    } else this.value = value;
+    this.value = createObservador(value || {}, this);
   }
 
   valueOf() {
@@ -24,87 +74,21 @@ class RefObjectContainer extends RefContainer {
     return res;
   }
 
-  static createObject(proxy: any, value: any, container: RefObjectContainer) {
-    if (Object.getPrototypeOf(proxy) === Object.prototype) {
+  update(updater: ((previousValue: any) => any) | any): void {
+    const newValue = typeof updater === "function" ? updater(this.value) : updater;
+    if (this.value === newValue)
+      return;
+    function convertValueInNotEmitted(value: any): any {
       for (const key in value) {
-        try {
-          if (
-            Object.getOwnPropertyDescriptor(proxy, key)?.writable === false ||
-            Object.getOwnPropertyDescriptor(proxy, key)?.get ||
-            Object.getOwnPropertyDescriptor(proxy, key)?.set
-          ) {
-            continue;
-          }
-          if (value[key] === undefined || value[key] === null) {
-            proxy[key] = value[key];
-            continue;
-          }
-          if (value[key] instanceof Array) {
-            // @ts-ignore
-            proxy[key] = new RefList(value[key]);
-          } else if (value[key] instanceof Set) {
-            // @ts-ignore
-            proxy[key] = new RefSet(value[key]);
-          } else if (value[key] instanceof Map) {
-            // @ts-ignore
-            proxy[key] = new RefMap(value[key]);
-          } else if (typeof value[key] === "string" || value[key] instanceof String) {
-            // @ts-ignore
-            proxy[key] = new RefString(value[key].valueOf());
-          } else if (typeof value[key] === "number" || value[key] instanceof Number) {
-            // @ts-ignore
-            proxy[key] = new RefNumber(value[key].valueOf());
-          } else if (typeof value[key] === "boolean" || value[key] instanceof Boolean) {
-            // @ts-ignore
-            proxy[key] = new RefBoolean(value[key].valueOf());
-          } else if (value[key] instanceof Element) {
-            //proxy[key] =
-          } else if (value[key] instanceof Object) {
-            if (Object.getPrototypeOf(proxy) === Object.prototype) {
-              const con = new RefObjectContainer(value[key], (container["root"] || this) as any);
-              proxy[key] = con.value;
-            } else proxy[key] = value[key];
-          }
-          if (proxy[key] instanceof ref) {
-            // @ts-ignore
-            proxy[key]["container"].root = container.root || this;
-          }
-        } catch (e) {}
+        if (value[key] !== null && typeof value[key] === "object" && Object.getPrototypeOf(value[key]) === Object.prototype) {
+          convertValueInNotEmitted(value[key]);
+        }
+        else value[key] = new NotEmitted(value[key]);
       }
+      return value;
     }
-  }
-
-  static applyObject(proxy: object, value: object, container: RefContainer) {
-    const keysOld = Object.keys(proxy);
-    const keys = Object.keys(value);
-    const keysRemove = keysOld.filter((k) => !keys.includes(k));
-    const keysUpdate = keys.filter((k) => keysOld.includes(k));
-    const keysNew = keys.filter((k) => !keysOld.includes(k));
-    for (const key of keysRemove) {
-      if (!keys.includes(key)) {
-        // @ts-ignore
-        delete proxy[key];
-      }
-    }
-    for (const key of keysUpdate) {
-      // @ts-ignore
-      if (proxy[key] instanceof ref) {
-        // @ts-ignore
-        proxy[key].emit(key, value[key]);
-      }
-      // @ts-ignore
-      else if (!(proxy[key] instanceof Element) && proxy[key] instanceof Object) {
-        // @ts-ignore
-        RefObjectContainer.applyObject.bind(this)(proxy[key], value[key], container);
-      }
-    }
-    if (keysNew.length === 0) return;
-    const newObject = {};
-    for (const key of keysNew) {
-      // @ts-ignore
-      newObject[key] = value[key];
-    }
-    RefObjectContainer.createObject.bind(this)(proxy, newObject, container);
+    Object.assign(this.value, convertValueInNotEmitted(newValue));
+    this.emitAll("value", this.valueOf());
   }
 
   emitAll(propertyName: string | symbol, value: any) {
@@ -112,78 +96,45 @@ class RefObjectContainer extends RefContainer {
   }
 }
 
-function applyProxy<T extends object>(target: any, key: keyof T, value: any, receiver: any, container: RefObjectContainer): any {
-  if (target[key] instanceof ref) {
-    // @ts-ignore
-    target[key].emit(key, value);
-  } else if (!(target[key] instanceof Element) && target[key] instanceof Object) {
-    if (Object.getPrototypeOf(target[key]) === Object.prototype) RefObjectContainer.applyObject(target[key], value, container);
-  } else if (value != null) {
-    RefObjectContainer.createObject(target, { [key]: value }, container);
-  } else {
-    Reflect.set(target, key, value, receiver);
-  }
-  return receiver;
-}
-
-function isApplyProxy(value: any) {
-  if (!value) return false;
-  if (typeof value !== "object") return true;
-  return (
-    Object.getPrototypeOf(value) === Object.prototype ||
-    Array.isArray(value) ||
-    value instanceof Map ||
-    value instanceof Set ||
-    value instanceof Number ||
-    value instanceof Boolean ||
-    value instanceof String
-  );
-}
 
 function createObservador<T extends object>(obj: T, container: RefObjectContainer): refObject<T> {
+  convertObjectInObjectRefDeep(obj);
   const refObject = new Proxy(obj || ({} as T), {
     // @ts-ignore
     get(target, key: keyof T, receiver) {
-      if (key == "toString") return JSON.stringify(obj);
-      if (key == "toJSON")
-        return () => {
-          return JSON.parse(JSON.stringify(obj));
-        };
-      if (key == "valueOf") return JSON.parse(JSON.stringify(obj));
+      // if (key == "toString") return JSON.stringify(obj);
+      // if (key == "toJSON")
+      //   return () => {
+      //     return JSON.parse(JSON.stringify(obj));
+      //   };
+      // if (key == "valueOf") return JSON.parse(JSON.stringify(obj));
       return Reflect.get(target, key, receiver);
     },
     // @ts-ignore
     set(target, key: keyof T, value, receiver) {
-      if (value && value instanceof ref) value = value?.valueOf() || value;
-      if (isApplyProxy(value)) receiver = applyProxy(target, key, value, receiver, container);
+      const isNotEmitted = value && value instanceof NotEmitted;
+      if (isNotEmitted) value = value.value;
+      // @ts-ignore
+      if (value && value instanceof ref) value = value.valueOf() || value?.value;
+      if (target[key] instanceof ref) {
+        // @ts-ignore
+        target[key].value = value;
+      }
       else {
         receiver = Reflect.set(target, key, value, receiver);
       }
-      container.emitAll(key as string, value);
+      if (!isNotEmitted && !(target[key] !== null && typeof target[key] === "object" && Object.getPrototypeOf(target[key]) === Object.prototype)) {
+        console.log("RefObject: emit", {
+          key, value, target, receiver
+        });
+        container.emitAll('value', this.value);
+      }
       return receiver;
     },
   }) as T & { toJSON: () => T };
   container.value = refObject;
   return refObject as refObject<T>;
 }
-
-// type refObject<T> = {
-//   [K in keyof T]: T[K] extends string | String
-//   ? refString
-//   : T[K] extends number | Number
-//   ? refNumber
-//   : T[K] extends boolean | Boolean
-//   ? refBoolean
-//   : T[K] extends Array<infer U>
-//   ? refList<U>
-//   : T[K] extends Map<infer MK, infer MV>
-//   ? refMap<MK, MV>
-//   : T[K] extends Set<infer SU>
-//   ? refSet<SU>
-//   : T[K] extends object
-//   ? refObject<T[K]>
-//   : T[K];
-// };
 
 type refObject<T> = T extends string | String
   ? refString
@@ -212,7 +163,7 @@ interface RefObject<T> {
   /**
    * The internal reference to another RefObject instance (if applicable).
    */
-  value: refObject<T>;
+  readonly value: refObject<T>;
 
   /**
    * Subscribes a function to be notified whenever the value changes.
@@ -301,6 +252,13 @@ interface RefObject<T> {
   unsubscribe(target: object | ((args: T) => void), propertyName: string | symbol): boolean;
 
   /**
+   * Updates the current value using either a new value or an updater function.
+   *
+   * @param updater - A new value or a function that takes the current value and returns the updated value.
+   */
+  update(updater: ((previousValue: T) => T) | T): void;
+
+  /**
    * Returns a string representation of the current value.
    */
   toString(): string;
@@ -338,6 +296,7 @@ export type DynamicRef<T> = T extends string | String
   ? RefObject<T>
   : never;
 
+
 export function ref<T = any>(value?: T): DynamicRef<T> {
   // if (value === undefined || value === null) throw new Error("ref: value cannot be null or undefined");
   value = TypeComposer.deepCopy(value);
@@ -363,6 +322,7 @@ export function ref<T = any>(value?: T): DynamicRef<T> {
     toString: container.toString.bind(container),
     toJSON: container.toJSON.bind(container),
     valueOf: container.valueOf.bind(container),
+    update: container.update.bind(container),
     id: container.id,
   };
   container["instance"] = instance;
@@ -378,8 +338,7 @@ export function ref<T = any>(value?: T): DynamicRef<T> {
       return container.value;
     },
     set(value: any) {
-      RefObjectContainer.applyObject(container.value, value, container);
-      container.emitAll("value", value);
+      container.update(value);
     },
   });
   Object.setPrototypeOf(instance, ref.prototype);

@@ -26,11 +26,10 @@
     "front-end"
   ],
   "scripts": {
-    "build": "node scripts/build.js && npm run copy",
+    "build": "node scripts/build.js",
     "build-scss": "sass ./styles/style.scss ./dist/styles/main.css",
     "minify": "find dist -name '*.js' -exec terser {} --compress drop_console=true --mangle --output {} \\;",
-    "pub": "node scripts/build.js && npm run minify && cd dist && npm publish --access public",
-    "copy": "rm -rf '/Users/Ezequiel/Documents/TypeComposer/test/node_modules/typecomposer/* -y' && cp -r ./dist/* '/Users/Ezequiel/Documents/TypeComposer/test/node_modules/typecomposer'"
+    "pub": "node scripts/build.js && npm run minify && cd dist && npm publish --access public"
   },
   "exports": {
     ".": {

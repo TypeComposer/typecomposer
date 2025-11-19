@@ -49,6 +49,7 @@ export class RefState<T> implements ref<T> {
   // @ts-ignore
   private emit(propertyName: string | symbol, value: any) {
     if (this.ref) {
+      // @ts-ignore
       this.ref.value = value;
     }
   }

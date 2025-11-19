@@ -1,0 +1,55 @@
+[tc-style~=tc-border-panel] {
+  display: grid;
+  height: 100vh;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto 1fr auto;
+}
+
+[tc-style~=tc-border-panel][variant=primary]>[slot=top],
+[tc-style~=tc-border-panel]:not([variant])>[slot=top] {
+  grid-column: 1/4;
+}
+
+[tc-style~=tc-border-panel][variant=primary]>[slot=left],
+[tc-style~=tc-border-panel]:not([variant])>[slot=left] {
+  grid-row: 2/3;
+}
+
+[tc-style~=tc-border-panel][variant=primary]>[slot=center],
+[tc-style~=tc-border-panel]:not([variant])>[slot=center] {
+  grid-row: 2/3;
+  grid-column: 2/3;
+}
+
+[tc-style~=tc-border-panel][variant=primary]>[slot=right],
+[tc-style~=tc-border-panel]:not([variant])>[slot=right] {
+  grid-row: 2/3;
+}
+
+[tc-style~=tc-border-panel][variant=primary]>[slot=bottom],
+[tc-style~=tc-border-panel]:not([variant])>[slot=bottom] {
+  grid-column: 1/4;
+}
+
+[tc-style~=tc-border-panel][variant=secondary]>[slot=top] {
+  grid-column: 2/3;
+}
+
+[tc-style~=tc-border-panel][variant=secondary]>[slot=left] {
+  grid-row: 1/4;
+}
+
+[tc-style~=tc-border-panel][variant=secondary]>[slot=center] {
+  grid-row: 2/3;
+  grid-column: 2/3;
+}
+
+[tc-style~=tc-border-panel][variant=secondary]>[slot=right] {
+  grid-row: 1/4;
+}
+
+[tc-style~=tc-border-panel][variant=secondary]>[slot=bottom] {
+  grid-column: 2/3;
+}
+
+/*# sourceMappingURL=BorderPanel.css.map */

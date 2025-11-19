@@ -15,7 +15,7 @@ const packageJson = {
   types: "index.d.ts",
   type: "module",
   sideEffects: ["./global/index.js", "./core/styles/**"],
-  files: ["README.md", "core", "global", "styles", "index.js", "index.d.ts", "index.js.map", "typings/index.d.ts", "assets", "translation", "LICENSE"],
+  files: ["README.md", "core", "global", "index.js", "index.d.ts", "index.js.map", "typings/index.d.ts", "assets", "translation", "LICENSE"],
   keywords: ["typecomposer"],
   preferGlobal: true,
   author: "Ezequiel",
@@ -90,11 +90,25 @@ function copyCssFiles(src, dest) {
 
     if (entry.isDirectory()) {
       copyCssFiles(srcPath, destPath);
-    } else if (entry.isFile() && entry.name.endsWith('.css')) {
+    } else if (entry.isFile() && (entry.name.endsWith('.css') || entry.name.endsWith('.css.map'))) {
       fs.mkdirSync(path.dirname(destPath), { recursive: true });
       fs.copyFileSync(srcPath, destPath);
     }
   });
+}
+
+/* Read copy.json and copy the dist folder to the specified projects */
+function copyDebugPorject() {
+  const jsonPath = path.resolve(__dirname, "./copy.json");
+  if (fs.existsSync(jsonPath)) {
+    const jsonContent = fs.readFileSync(jsonPath, "utf-8");
+    const { project } = JSON.parse(jsonContent);
+    for (const projectPath of project) {
+      console.log("Copying to project:", projectPath);
+      const command = `rm -rf '${projectPath}/node_modules/typecomposer/*' -y && cp -r ./dist/* '${projectPath}/node_modules/typecomposer'`;
+      execSync(command, { stdio: "inherit" });
+    }
+  }
 }
 
 
@@ -113,4 +127,5 @@ if (require.main === module) {
   copyCssFiles('src', 'dist');
   readPackageVersion();
   writePackageJson();
+  copyDebugPorject();
 }
