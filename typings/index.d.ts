@@ -255,7 +255,7 @@ declare global {
     innerHTML: refString | refNumber | IComponent;
     innerText: refString | string | refNumber | number;
     style: CSSStyleDeclarationRef;
-    variant: refString | undefined;
+    variant: string | refString | undefined;
     disabled: refBoolean | boolean;
     className: refString | string;
     hidden: refBoolean | boolean;

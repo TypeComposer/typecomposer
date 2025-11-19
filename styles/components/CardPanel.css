@@ -1,0 +1,11 @@
+[tc-style~=tc-card-panel] {
+  border-radius: 5px;
+  box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
+  background-color: white;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+/*# sourceMappingURL=CardPanel.css.map */

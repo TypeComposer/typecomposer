@@ -1,5 +1,5 @@
 
-export { AlertPanel } from "./alert-panel/AlertPanel";
+export { ToastPanel } from "./toast-panel/ToastPanel";
 export { AvatarPanel } from "./avatar-panel/AvatarPanel";
 export { BorderPanel } from "./border-panel/BorderPanel";
 export { CardPanel } from "./card-panel/CardPanel";

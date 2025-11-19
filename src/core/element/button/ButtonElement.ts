@@ -6,7 +6,6 @@ export class ButtonElement extends HTMLButtonElement implements IComponent {
 	loading: boolean = false;
 	constructor(props?: ElementType<ButtonElement>) {
 		super();
-		this.extendedStyle.add(ButtonElement.TAG);
 		// @ts-ignore
 		Component.initComponent(this, ButtonElement, props);
 	}

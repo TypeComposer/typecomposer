@@ -93,6 +93,8 @@ function copyCssFiles(src, dest) {
     } else if (entry.isFile() && (entry.name.endsWith('.css') || entry.name.endsWith('.css.map'))) {
       fs.mkdirSync(path.dirname(destPath), { recursive: true });
       fs.copyFileSync(srcPath, destPath);
+    } else if (entry.isFile() && entry.name.endsWith('.scss')) {
+      execSync(`npx sass ${srcPath} ${destPath.replace('.scss', '.css')}`, { stdio: 'inherit' });
     }
   });
 }

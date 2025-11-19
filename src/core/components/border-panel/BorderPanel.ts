@@ -11,12 +11,12 @@ export class BorderPanel extends Component {
 
   constructor(
     props?: ElementType & {
-      variant?: "primary" | "secondary" | refString;
+      variant?: "primary" | "secondary" | (refString & {});
     },
   ) {
     super(props);
+    this.extendedStyle.add(BorderPanel.TAG);
     this.variant = props?.variant;
-    this.addClassName("border-panel");
     this._left = this.appendChild(new DivElement());
     this._top = this.appendChild(new DivElement());
     this._center = this.appendChild(new DivElement());
