@@ -28,7 +28,7 @@ export type refList<T> = RefList<T>;
  * Inherits from Array and intercepts mutations like push, pop, splice, etc.
  */
 export class RefList<T = any> extends Array<T> implements ref<T[]> {
-  
+
   /**
    * Internal container that manages the reactive value and its subscribers.
    */
@@ -290,6 +290,14 @@ export class RefList<T = any> extends Array<T> implements ref<T[]> {
    */
   toJSON() {
     return this.value;
+  }
+
+  update(updater: ((previousValue: T[]) => T[]) | T[]) {
+    if (typeof updater === "function") {
+      this.value = updater(this.value);
+    } else {
+      this.value = updater;
+    }
   }
 
 }

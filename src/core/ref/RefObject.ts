@@ -78,17 +78,25 @@ class RefObjectContainer extends RefContainer {
     const newValue = typeof updater === "function" ? updater(this.value) : updater;
     if (this.value === newValue)
       return;
-    function convertValueInNotEmitted(value: any): any {
-      for (const key in value) {
-        if (value[key] !== null && typeof value[key] === "object" && Object.getPrototypeOf(value[key]) === Object.prototype) {
-          convertValueInNotEmitted(value[key]);
-        }
-        else value[key] = new NotEmitted(value[key]);
-      }
-      return value;
+    if (newValue === null || newValue === undefined || newValue === false)
+      this.value = newValue;
+    else if (newValue && typeof newValue === "object" && Object.getPrototypeOf(newValue) !== Object.prototype) {
+      this.value = newValue;
     }
-    Object.assign(this.value, convertValueInNotEmitted(newValue));
+    else {
+      function convertValueInNotEmitted(value: any): any {
+        for (const key in value) {
+          if (value[key] !== null && typeof value[key] === "object" && Object.getPrototypeOf(value[key]) === Object.prototype) {
+            convertValueInNotEmitted(value[key]);
+          }
+          else value[key] = new NotEmitted(value[key]);
+        }
+        return value;
+      }
+      Object.assign(this.value, convertValueInNotEmitted(newValue));
+    }
     this.emitAll("value", this.valueOf());
+
   }
 
   emitAll(propertyName: string | symbol, value: any) {
@@ -98,6 +106,9 @@ class RefObjectContainer extends RefContainer {
 
 
 function createObservador<T extends object>(obj: T, container: RefObjectContainer): refObject<T> {
+  if (Object.getPrototypeOf(obj) !== Object.prototype) {
+    return obj as refObject<T>;
+  }
   convertObjectInObjectRefDeep(obj);
   const refObject = new Proxy(obj || ({} as T), {
     // @ts-ignore

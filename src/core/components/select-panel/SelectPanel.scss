@@ -1,0 +1,113 @@
+[tc-style~=tc-select-panel] {
+  color: var(--text-color);
+  position: relative;
+  max-width: 250px;
+  width: 220px;
+  display: inline-block;
+  font-family: Arial, sans-serif;
+}
+
+[tc-style~=tc-select-panel] .select-list {
+  position: absolute;
+  left: 0px;
+  // right: 0;
+  background-color: var(--button-background);
+  border-radius: 8px;
+  margin-top: 5px;
+  padding: 0;
+  list-style: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: none;
+  z-index: 2;
+  max-height: 300px;
+  overflow: auto;
+}
+
+[tc-style~=tc-select-panel] .select-list li {
+  padding: 10px 12px;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
+[tc-style~=tc-select-panel] .aria-InputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+[tc-style~=tc-select-panel] .aria-Input {
+  width: 100%;
+  padding: 10px 36px 10px 12px;
+  background-color: var(--button-background);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+[tc-style~=tc-select-panel] .aria-Input:focus {
+  outline: none;
+}
+
+[tc-style~=tc-select-panel] .aria-InputWrapper::after {
+  content: "▼";
+  position: absolute;
+  right: 1em;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  font-size: 10px;
+  color: var(--text-color);
+  pointer-events: none;
+}
+
+
+[tc-style~=tc-select-panel] .select-list li:hover {
+  background-color: var(--highlight-background);
+  color: var(--highlight-foreground);
+  border-radius: 0px;
+}
+
+[tc-style~=tc-select-panel] [aria-selected]::after {
+  content: "✓";
+  float: right;
+  color: var(--text-color);
+}
+
+[tc-style~=tc-select-panel] .select-list li:hover:first-child {
+  border-radius: 8px 8px 0px 0px;
+}
+
+[tc-style~=tc-select-panel] .select-list li:hover:last-child {
+  border-radius: 0px 0px 8px 8px;
+}
+
+
+[tc-style~=tc-select-panel].open .select-list {
+  display: block;
+}
+
+[tc-style~=tc-select-panel].open.up .select-list {
+  bottom: 100%;
+  top: auto;
+  margin-top: 0;
+  margin-bottom: 5px;
+}
+
+[tc-style~=tc-select-panel].open .aria-InputWrapper::after {
+  content: "▲";
+}
+
+[tc-style~=tc-select-panel].open .aria-InputWrapper:focus-within:has(input:enabled:not([readonly]))::after {
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  -o-transform: rotate(45deg);
+  transform: rotate(319deg);
+  display: block;
+  content: "⚲";
+  position: absolute;
+  right: 0.4em;
+  font-size: 20px;
+  top: 25%;
+}

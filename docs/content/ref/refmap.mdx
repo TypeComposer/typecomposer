@@ -1,0 +1,65 @@
+# Overview
+
+`RefMap<K, V>` is a reactive map reference for key-value state that updates subscribers on mutation.
+
+## 1. Creating a RefMap
+
+```javascript
+import { ref, RefMap } from 'typecomposer';
+
+// preferred: wrap a Map with ref
+const store = ref(new Map());
+store.value.set('theme', 'dark');
+
+// typed convenience (if needed)
+const typedStore = new RefMap(new Map());
+```
+
+## 2. Using in UI
+
+```javascript
+import { DivElement, computed } from 'typecomposer';
+
+const themeText = new DivElement({
+  text: computed(() => `Theme: ${store.value.get('theme')}`),
+});
+```
+
+## 3. Subscribing to Changes
+
+```javascript
+// subscribe: immediate emit with (newValue, oldValue)
+store.subscribe((newMap, oldMap) => {
+  console.log('map size:', newMap.size);
+});
+
+// listen: only future changes
+store.listen((newMap, oldMap) => {
+  console.log('future map size:', newMap.size);
+});
+
+// update via function or direct assignment
+store.update(prev => new Map(prev).set('theme', 'light'));
+store.value = new Map(store.value); // reassign
+```
+
+## 4. Derived Values
+
+```javascript
+import { computed } from 'typecomposer';
+
+const hasTheme = computed(() => store.value.has('theme'));
+```
+
+## API Reference
+
+- subscribe(handler: `(newValue, oldValue) => void`): boolean
+- listen(handler: `(newValue, oldValue) => void`): boolean
+- update(updater: `(prev) => next | next`): void
+- value: `Map<K,V>` get/set
+
+## 5. When to Use RefMap
+
+- Caches, registries, and keyed state
+- Dynamic option sets or configuration
+- Combine with `computed` for derived lookups

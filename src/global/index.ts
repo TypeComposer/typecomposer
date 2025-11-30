@@ -65,7 +65,9 @@ Object.defineProperty(Element.prototype, "extendedStyle", {
         const i = tags.indexOf(tag);
         if (i !== -1) {
           tags.splice(i, 1);
-          el.setAttribute("tc-style", tags.join(" "));
+          const newTags = tags.filter(Boolean).join(" ");
+          if (!newTags.length) el.removeAttribute("tc-style");
+          else el.setAttribute("tc-style", newTags);
         }
       },
       has(tag: string) {
@@ -73,6 +75,18 @@ Object.defineProperty(Element.prototype, "extendedStyle", {
       },
       toggle(tag: string) {
         this.has(tag) ? this.remove(tag) : this.add(tag);
+      },
+      replace(oldTag: string, newTag: string) {
+        const tags = (el.getAttribute("tc-style") || "").split(/\s+/).filter(Boolean);
+        const i = tags.indexOf(oldTag);
+        if (i !== -1) {
+          tags[i] = newTag;
+          el.setAttribute("tc-style", tags.join(" "));
+        }
+        else {
+          tags.push(newTag);
+        }
+        el.setAttribute("tc-style", tags.join(" "));
       },
       clear() {
         el.removeAttribute("tc-style");
@@ -94,6 +108,9 @@ Object.defineProperty(Element.prototype, "extendedStyle", {
 
 const controllerInjects = new Map<any, any>();
 const injectService = Symbol("injectService");
+const controllerUniqueId = {
+  counter: 0,
+}
 
 const TypeComposer = {
   defineElement(name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions): void {
@@ -104,6 +121,7 @@ const TypeComposer = {
     customElements.define(name, constructor, options);
   },
   createElement: (tag: any, props: any, ...children: any[]): any => {
+    children = children.filter((c) => c !== null && c !== undefined && c !== false && c !== true);
     const isComponent = tag?.prototype instanceof Node;
     const parentElement = props?.[TypeComposer.parentComponentSymbol];
     if (props) {
@@ -225,6 +243,14 @@ const TypeComposer = {
         element.append(templateResult);
       }
     }
+  },
+  generateUniqueId: (prefix?: string) => {
+    const raw = window.crypto?.getRandomValues
+      ? crypto.getRandomValues(new Uint32Array(1))[0]
+      : (Math.random() * Number.MAX_SAFE_INTEGER) | 0;
+
+    const code = raw.toString(36).padStart(4, "0").slice(-4);
+    return `${prefix ? prefix + "-" : ""}${controllerUniqueId.counter++}${code}`;
   },
   initComponent: function (element: Node, parent: Node) {
     if (element instanceof Node && !element[parentComponentSymbol]) {

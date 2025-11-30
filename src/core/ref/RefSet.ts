@@ -181,4 +181,12 @@ export class RefSet<U> extends Set<U> implements ref<Set<U>> {
     }
     return obj;
   }
+
+  update(updater: ((previousValue: Set<U>) => Set<U>) | Set<U>) {
+    if (typeof updater === "function") {
+      this.value = updater(this.value);
+    } else {
+      this.value = updater;
+    }
+  }
 }

@@ -1,0 +1,87 @@
+# Overview
+
+The `RefString` in TypeComposer provides a reactive string reference. It allows you to bind string values to DOM elements and components so that updates propagate automatically.
+
+## 1. Creating a RefString
+
+Prefer `ref(initialValue)` to create a reactive string; `refString(initialValue)` is available as a typed convenience.
+
+### Example:
+
+```javascript
+import { ref, refString } from 'typecomposer';
+
+// preferred generic creator
+const name = ref('John');
+
+// typed convenience
+const title = refString('Dr.');
+
+// read
+console.log(name.value); // 'John'
+
+// write
+name.value = 'Jane';
+```
+
+### Features:
+- Reactive updates: subscribers are notified when `value` changes.
+- DOM binding: assigning `refString` to attributes, text, or style updates the DOM when the ref changes.
+
+## 2. Binding to Components/Elements
+
+You can bind a `RefString` to `innerText`, `innerHTML`, `className`, attributes, or styles.
+
+### Example:
+
+```javascript
+import { DivElement, ref } from 'typecomposer';
+
+const title = ref('Hello');
+const div = new DivElement({
+  text: title, // innerText bound to ref
+  className: ref('title primary'),
+  style: { color: ref('red') },
+});
+
+// later
+title.value = 'Hello, world!'; // div text updates automatically
+```
+
+## 3. Subscribing to Changes
+
+Subscribe/listen/update to react in code.
+
+```javascript
+// subscribe: immediate emit with (newValue, oldValue)
+name.subscribe((newVal, oldVal) => {
+  console.log('name changed:', { newVal, oldVal });
+});
+
+// listen: only future changes
+name.listen((newVal, oldVal) => {
+  console.log('future change:', newVal);
+});
+
+// update via function or direct assignment
+name.update(prev => prev.toUpperCase());
+name.value = 'Jenny';
+```
+
+## 4. Interop with `computed`
+
+Combine `RefString` with `computed` to derive values.
+
+```javascript
+import { computed, refString } from 'typecomposer';
+
+const first = refString('John');
+const last = refString('Doe');
+const fullName = computed(() => `${first.value} ${last.value}`);
+```
+
+## 5. When to Use RefString
+
+- Bind text, attributes, or classes that change over time.
+- Derive other refs via `computed` for string transformations.
+- Drive UI state from reactive string sources.

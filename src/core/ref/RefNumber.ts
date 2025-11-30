@@ -194,4 +194,12 @@ export class RefNumber implements Number, ref<number> {
   toJSON() {
     return this.container.root ? this.value : { value: this.value };
   }
+
+  update(updater: ((previousValue: number) => number) | number) {
+    if (typeof updater === "function") {
+      this.value = updater(this.value);
+    } else {
+      this.value = updater;
+    }
+  }
 }

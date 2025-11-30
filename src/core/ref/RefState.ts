@@ -110,4 +110,13 @@ export class RefState<T> implements ref<T> {
   toString(): string {
     return "this.ref?.toString() || "
   }
+
+  update(updater: ((previousValue: T) => T) | T) {
+    if (typeof updater === "function") {
+      // @ts-ignore
+      this.value = updater(this.value);
+    } else {
+      this.value = updater;
+    }
+  }
 }

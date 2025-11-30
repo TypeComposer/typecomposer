@@ -1,0 +1,67 @@
+# Overview
+
+`RefBoolean` is a reactive boolean reference for toggles, visibility, and flags in TypeComposer.
+
+## 1. Creating a RefBoolean
+
+```javascript
+import { ref, refBoolean } from 'typecomposer';
+
+// preferred generic creator
+const isOpen = ref(false);
+
+// typed convenience creator
+const enabled = refBoolean(true);
+```
+
+## 2. Binding to Components/Elements
+
+Bind to `hidden`, `disabled`, `checked` of inputs, or conditional classes.
+
+```javascript
+import { DivElement, InputElement, ref } from 'typecomposer';
+
+const isOpen = ref(false);
+const panel = new DivElement({ hidden: isOpen });
+const checkbox = new InputElement({ checked: isOpen });
+
+// set value directly
+isOpen.value = true; // shows panel, checks checkbox
+
+// toggle convenience (only on refBoolean)
+const enabled = refBoolean(true);
+enabled.toggle(); // flips between true/false
+```
+
+## 3. Subscribing to Changes
+
+```javascript
+// subscribe: immediate emit of current value
+isOpen.subscribe((newVal, oldVal) => {
+  console.log('open changed:', { newVal, oldVal });
+});
+
+// listen: only future changes (no immediate emit)
+isOpen.listen((newVal, oldVal) => {
+  console.log('future change:', newVal);
+});
+
+// update: set by function or direct value
+isOpen.update(prev => !prev);
+isOpen.value = false; // direct set
+```
+
+## 4. Computed and Conditions
+
+```javascript
+import { computed, ref } from 'typecomposer';
+
+const enabled = ref(true);
+const visibleClass = computed(() => (enabled.value ? 'visible' : 'hidden'));
+```
+
+## 5. When to Use RefBoolean
+
+- Toggle UI visibility or enabled state
+- Control form input `checked` and `disabled`
+- Derive CSS classes or styles from flags

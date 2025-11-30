@@ -1,0 +1,56 @@
+# Overview
+
+`RefContainer<T>` groups multiple refs or values under one reactive container, useful for bundling related data.
+
+## 1. Creating a RefContainer
+
+```javascript
+import { RefContainer, ref } from 'typecomposer';
+
+const container = new RefContainer({
+  title: ref('Hello'),
+  count: ref(1),
+});
+```
+
+## 2. Binding to UI
+
+```javascript
+import { DivElement, computed } from 'typecomposer';
+
+const el = new DivElement({ text: computed(() => `${container.value.title.value} (${container.value.count.value})`) });
+```
+
+## 3. Subscribing to Changes
+
+```javascript
+// subscribe: immediate emit (newValue, oldValue)
+container.subscribe((c, prev) => console.log('container changed:', c));
+
+// listen: only future changes
+container.listen((c, prev) => console.log('future container:', c));
+
+// update
+container.update(prev => ({ ...prev, count: ref(prev.count.value + 1) }));
+```
+
+## 4. Derived Values
+
+```javascript
+import { computed } from 'typecomposer';
+
+const display = computed(() => `${container.value.title.value.toUpperCase()}`);
+```
+
+## API Reference
+
+- subscribe(handler: `(newValue, oldValue) => void`): boolean
+- listen(handler: `(newValue, oldValue) => void`): boolean
+- update(updater: `(prev) => next | next`): void
+- value: `{ [key: string]: ref | any }` get/set
+
+## 5. When to Use RefContainer
+
+- Bundle related refs for passing through components
+- Group UI state without complex stores
+- Compose with `computed` for quick derived display values

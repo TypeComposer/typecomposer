@@ -1,0 +1,58 @@
+# Overview
+
+`RefObject<T>` is a reactive reference for plain objects, enabling property-based UI updates in TypeComposer.
+
+## 1. Creating a RefObject
+
+```javascript
+import { ref, refObject } from 'typecomposer';
+
+// preferred generic creator
+const user = ref({ name: 'John', age: 30 });
+
+// typed convenience creator
+const account = refObject({ balance: 100 });
+
+// set by direct value
+user.value.name = 'Jane';
+```
+
+## 2. Binding to Components/Elements
+
+```javascript
+import { DivElement } from 'typecomposer';
+
+const info = new DivElement({ text: () => `${user.value.name} (${user.value.age})` });
+```
+
+## 3. Subscribing to Changes
+
+```javascript
+// subscribe: immediate emit with (newValue, oldValue)
+user.subscribe((newObj, oldObj) => {
+  console.log('user changed:', { newObj, oldObj });
+});
+
+// listen: only future changes
+user.listen((newObj, oldObj) => {
+  console.log('future change:', newObj);
+});
+
+// update via function or direct assignment
+user.update(prev => ({ ...prev, age: prev.age + 1 }));
+user.value = { ...user.value, name: 'Janet' };
+```
+
+## 4. Derived Values
+
+```javascript
+import { computed } from 'typecomposer';
+
+const display = computed(() => `${user.value.name.toUpperCase()}`);
+```
+
+## 5. When to Use RefObject
+
+- Form models and structured UI state
+- Reactive object properties
+- Combine with `computed` for presentation strings

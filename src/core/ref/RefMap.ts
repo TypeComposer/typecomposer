@@ -184,4 +184,12 @@ export class RefMap<K, V> extends Map<K, V> implements ref<Map<K, V>> {
     }
     return obj;
   }
+
+  update(updater: ((previousValue: Map<K, V>) => Map<K, V>) | Map<K, V>) {
+    if (typeof updater === "function") {
+      this.value = updater(this.value);
+    } else {
+      this.value = updater;
+    }
+  }
 }

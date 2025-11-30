@@ -1,0 +1,67 @@
+# Overview
+
+`RefList<T>` is a reactive list reference that tracks arrays and propagates changes to bound components.
+
+## 1. Creating a RefList
+
+```javascript
+import { refList } from 'typecomposer';
+
+const items = refList([1, 2, 3]);
+items.push(4);
+```
+
+## 2. Rendering Lists
+
+Use list binding with fragments or custom components.
+
+```javascript
+import { Fragment, DivElement, refList } from 'typecomposer';
+
+const items = refList(['A', 'B']);
+
+const listFragment = Fragment.forEach(items, (val, idx) =>
+  new DivElement({ text: `${idx}: ${val}` })
+);
+```
+
+## 3. Subscribing to Changes
+
+```javascript
+// subscribe: immediate emit with (newValue, oldValue)
+items.subscribe((newArr, oldArr) => {
+  console.log('items updated:', { newArr, oldArr });
+});
+
+// listen: only future changes
+items.listen((newArr, oldArr) => {
+  console.log('future update:', newArr);
+});
+```
+
+## 4. Derived Values
+
+```javascript
+import { computed } from 'typecomposer';
+
+const countText = computed(() => `Count: ${items.value.length}`);
+```
+
+### Common Mutations & Helpers
+
+```javascript
+items.clear();          // remove all items
+items.removeItem('A');  // remove by value (first match)
+items.remove(2, 1);     // remove at index with count
+items.insert(0, 'X');   // insert at index
+items.splice(1, 2);     // standard array splice
+items.sort();           // standard array sort
+items.reverse();        // standard array reverse
+items.update(prev => [...prev, 'Z']); // replace by updater
+```
+
+## 5. When to Use RefList
+
+- Dynamic collections that drive repeated UI
+- Reactive tables, menus, and lists
+- Combine with `computed` for summaries and metrics

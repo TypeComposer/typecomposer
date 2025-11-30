@@ -7,7 +7,8 @@ export { CheckBox } from "./check-box/CheckBox";
 export { ColorPicker } from "./color-picker/ColorPicker";
 export { DialogPanel } from "./dialog-panel/DialogPanel";
 export { TextField } from "./text-field/TextField";
-export { DropDown, DropDownItem } from "./drop-down/DropDown";
+export { SwitchPanel } from "./switch-panel/SwitchPanel";
+// export { DropDown, DropDownItem } from "./drop-down/DropDown";
 export { FlowPanel } from "./flow-panel/FlowPanel";
 export { ForEach } from "./for-each/ForEach";
 export { GridPanel } from "./grid-panel/GridPanel";
@@ -16,7 +17,7 @@ export { LazyLoad } from "./lazy-load/LazyLoad";
 export { ListPanel } from "./list-panel/ListPanel";
 export { PopUpButton } from "./pop-up-button/PopUpButton";
 export { ScrollPanel } from "./scroll-panel/ScrollPanel";
-export { SelectPanel } from "./select-panel/SelectPanel";
+export { SelectPanel, SelectItemPanel } from "./select-panel/SelectPanel";
 // Missing
 export { StackPanel } from "./stack-panel/StackPanel";
 // export { TablePanel } from "./table-panel/TablePanel.tsClose";

@@ -1,0 +1,63 @@
+# Overview
+
+`RefSet<T>` is a reactive set reference for managing unique collections with automatic updates.
+
+## 1. Creating a RefSet
+
+```javascript
+import { ref, RefSet } from 'typecomposer';
+
+// preferred: wrap a Set with ref
+const selected = ref(new Set());
+selected.value.add('a');
+
+// typed convenience
+const typedSelected = new RefSet(new Set());
+```
+
+## 2. Using in UI
+
+```javascript
+import { DivElement, computed } from 'typecomposer';
+
+const count = new DivElement({ text: computed(() => `Selected: ${selected.value.size}`) });
+```
+
+## 3. Subscribing to Changes
+
+```javascript
+// subscribe: immediate emit with (newValue, oldValue)
+selected.subscribe((newSet, oldSet) => {
+  console.log('set size:', newSet.size);
+});
+
+// listen: only future changes
+selected.listen((newSet, oldSet) => {
+  console.log('future size:', newSet.size);
+});
+
+// update via function or direct assignment
+selected.update(prev => new Set([...prev, 'b']));
+selected.value = new Set(selected.value);
+```
+
+## 4. Derived Values
+
+```javascript
+import { computed } from 'typecomposer';
+
+const hasA = computed(() => selected.value.has('a'));
+```
+
+## API Reference
+
+- subscribe(handler: `(newValue, oldValue) => void`): boolean
+- listen(handler: `(newValue, oldValue) => void`): boolean
+- update(updater: `(prev) => next | next`): void
+- value: `Set<T>` get/set
+
+## 5. When to Use RefSet
+
+- Selection states, tags, and filters
+- Unique membership tracking
+- Combine with `computed` for derived flags

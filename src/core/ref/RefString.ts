@@ -305,4 +305,12 @@ export class RefString implements ref<string> {
   sup(): string {
     return this.container.value.sup();
   }
+
+  update(updater: ((previousValue: string) => string) | string) {
+    if (typeof updater === "function") {
+      this.value = updater(this.value);
+    } else {
+      this.value = updater;
+    }
+  }
 }

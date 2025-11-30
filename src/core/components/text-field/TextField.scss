@@ -1,0 +1,39 @@
+[tc-style~=tc-text-field] {
+  display: flex;
+  flex-direction: column;
+  color: var(--text-color);
+
+  .aria-Input,
+  .aria-TextArea {
+    padding: 0.25025rem;
+    margin: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--field-background);
+    font-size: 1.000125rem;
+    color: var(--field-text-color);
+
+    &:focus {
+      outline: 2px solid var(--focus-ring-color);
+      outline-offset: -1px;
+    }
+  }
+
+
+  .aria-Input,
+  .aria-TextArea {
+    &[data-invalid] {
+      border-color: var(--invalid-color);
+    }
+  }
+
+  .aria-FieldError {
+    font-size: 12px;
+    color: var(--invalid-color);
+  }
+
+  [slot=description] {
+    font-size: 12px;
+  }
+
+}

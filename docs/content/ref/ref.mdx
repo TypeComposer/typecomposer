@@ -1,0 +1,129 @@
+# Overview
+
+`ref<T>(initial)` creates a reactive reference to any value (boolean, number, string, object, array, Map, Set). It notifies subscribers when `value` changes and integrates with TypeComposer components and styles.
+
+## 1. Creating refs
+
+```javascript
+import { ref } from 'typecomposer';
+
+// primitives
+const isOpen = ref(true);
+const count = ref(0);
+const title = ref('Hello');
+
+// arrays
+const items = ref(['A', 'B']);
+
+// objects
+const user = ref({ name: 'John', age: 30 });
+
+// Map / Set
+const prefs = ref(new Map([['theme', 'dark']]));
+const tags = ref(new Set(['news']));
+```
+
+## 2. Binding to UI
+
+```javascript
+import { DivElement, InputElement } from 'typecomposer';
+
+const isOpen = ref(false);
+const count = ref(0);
+const title = ref('Hello');
+
+const panel = new DivElement({ hidden: isOpen });
+const label = new DivElement({ text: count });
+const input = new InputElement({ value: title });
+
+// update UI by changing refs
+isOpen.value = true;   // shows panel
+count.value += 1;      // label updates
+title.value = 'Hi!';   // input reflects the new value
+```
+
+## 3. Events: subscribe, listen, update, value
+
+```javascript
+const valueRef = ref(1);
+
+// subscribe: immediate emit of (newValue, oldValue)
+valueRef.subscribe((newVal, oldVal) => {
+  console.log('value changed:', { newVal, oldVal });
+});
+
+// listen: only future changes
+valueRef.listen((newVal, oldVal) => {
+  console.log('future change:', newVal);
+});
+
+// update via function
+valueRef.update(prev => prev + 1);
+
+// direct assignment
+valueRef.value = 10;
+```
+
+## 4. Derived values with computed
+
+```javascript
+import { computed } from 'typecomposer';
+
+const first = ref('John');
+const last = ref('Doe');
+
+// function form
+const full = computed(() => `${first.value} ${last.value}`);
+
+// tagged template form
+const fullTpl = computed`${first.value} ${last.value}`;
+
+// global alias
+const nameCaps = C`${first.value.toUpperCase()}`;
+```
+
+## 5. Arrays, Map, Set patterns
+
+```javascript
+// arrays
+const items = ref(['A']);
+items.value = [...items.value, 'B']; // reassign to trigger updates
+
+// Map
+const prefs = ref(new Map());
+prefs.update(prev => new Map(prev).set('lang', 'en'));
+
+// Set
+const tags = ref(new Set());
+tags.update(prev => new Set([...prev, 'news']));
+```
+
+## 6. Binding styles and classes
+
+```javascript
+const color = ref('red');
+const klass = ref('title primary');
+
+const box = new DivElement({
+  style: { color },
+  className: klass,
+});
+
+// later
+color.value = 'blue';
+klass.value = 'title secondary';
+```
+
+## 7. When to use `ref`
+
+- Simple reactive state for any type
+- Quick bindings for text, attributes, styles, classes, and inputs
+- Compose with `computed` to derive display values
+
+## API Reference
+
+- `ref<T>(initial: T): Ref<T>`
+- `subscribe(handler: (newValue: T, oldValue: T) => void): boolean`
+- `listen(handler: (newValue: T, oldValue: T) => void): boolean`
+- `update(updater: (prev: T) => T | T): void`
+- `value: T` get/set

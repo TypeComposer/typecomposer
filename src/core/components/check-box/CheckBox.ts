@@ -2,83 +2,66 @@ import { Component, InputElement, LabelElement, ElementType, IconElement, ref } 
 
 export class CheckBox extends Component {
   static readonly TAG: string = "tc-check-box";
-  private _input: InputElement;
-  private _label: LabelElement;
-  private static serial = Math.round(Math.random() * 1000);
-  private _variant: "checkbox" | "radio" = "checkbox";
+  readonly inputElement: InputElement = new InputElement({ type: "checkbox" });
+  readonly labelElement: LabelElement | undefined;
+  readonly label: string = "";
 
   constructor(
-    props?: ElementType & {
-      variant?: "checkbox" | "radio";
-      label?: string;
-      value?: boolean | ref<boolean>;
-      icon?: IconElement;
-      placeholderAnimation?: boolean;
-    },
+    props?: ElementType<CheckBox, "variant"> & { variant?: "checkbox" | "radio"; inputId?: string },
   ) {
-    super();
-    const label = props?.label;
-    delete props?.label;
-    const value = props?.value;
-    delete props?.value;
-    Component.applyProps(this, props);
-    this._variant = props?.variant || "checkbox";
-    this._input = new InputElement({
-      type: this.variant,
-      className: this.variant,
-      id: `checkbox-${CheckBox.serial++}-${Math.round(Math.random() * 100)}`,
-      // checked: value,
-    });
-    this._label = new LabelElement({ text: label });
-    this._label.setAttribute("for", this._input.id);
-    if (props?.style?.color) this._input.style.accentColor = props.style.color;
-    this.append(this._input, this._label);
-    this.addEventListener("change", () => {
-      this.onChange(this.checked, this.value);
-    });
+    super(props);
+    this.inputElement.id = props?.inputId || TypeComposer.generateUniqueId();
+    this.extendedStyle.add(CheckBox.TAG);
+    this.label = props?.label || "";
+    this.inputElement.checked = props?.checked ?? false;
+    if (props?.variant) this.variant = props.variant;
+    if (props?.disabled) this.disabled = props.disabled;
+    if (props?.value) this.value = props.value;
+    if (props?.name) this.name = props.name;
+    this.append(this.inputElement);
+    if (props?.label)
+      this.labelElement = this.appendChild(new LabelElement({ className: 'aria-Label', text: props.label, htmlFor: this.inputElement.id }));
+    // this.inputElement.addEventListener("change", (e) => this.dispatchEvent(new Event("change")), { capture: true });
+
   }
 
-  public onChange: (checked: boolean, value?: any) => void = () => { };
+  public get name(): string {
+    return this.inputElement.name;
+  }
 
-  public get id(): string {
-    return this.input.id;
+  public set name(value: string) {
+    this.inputElement.name = value;
+  }
+
+  public get value(): string {
+    return this.inputElement.value;
+  }
+
+  public set value(value: string) {
+    this.inputElement.value = value;
   }
 
   public get checked(): boolean {
     // @ts-ignore
-    return this.input.checked;
+    return this.inputElement.checked;
   }
 
   public set checked(value: boolean | ref<boolean>) {
     // @ts-ignore
-    this.input.checked = value;
+
+    this.inputElement.checked = value;
   }
 
-  public get value(): boolean {
-    // @ts-ignore
-    return this._input.checked;
-  }
-
-  public set value(value: boolean) {
-    this.checked = value;
-  }
-
-  public get input(): InputElement {
-    return this._input;
-  }
-
-  public get label(): LabelElement {
-    return this._label;
-  }
 
   public get variant(): "checkbox" | "radio" {
-    return this._variant;
+    // @ts-ignore
+    return super.variant;
   }
 
   public set variant(value: "checkbox" | "radio") {
-    this._variant = value;
-    this.input.type = value;
-    this.input.className = value;
+    super.variant = value;
+    this.inputElement.type = value;
+    this.inputElement.className = value;
   }
 }
 
@@ -132,5 +115,4 @@ export class CheckBoxGroup extends Component {
   }
 }
 
-// @ts-ignore
 TypeComposer.defineElement(CheckBoxGroup.TAG, CheckBoxGroup);

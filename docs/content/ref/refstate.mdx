@@ -1,0 +1,59 @@
+# Overview
+
+`RefState<T>` is a reactive state container that behaves like a simple store, supporting updates and subscriptions.
+
+## 1. Creating a RefState
+
+```javascript
+import { ref, RefState } from 'typecomposer';
+
+// preferred: generic ref for state objects
+const state = ref({ loading: false, data: null });
+state.value.loading = true;
+
+// typed convenience: RefState
+const typedState = new RefState({ loading: false, data: null });
+```
+
+## 2. Binding to UI
+
+```javascript
+import { DivElement, computed } from 'typecomposer';
+
+const status = new DivElement({ text: computed(() => (state.value.loading ? 'Loading…' : 'Ready')) });
+```
+
+## 3. Subscribing to Changes
+
+```javascript
+// subscribe: immediate emit (newValue, oldValue)
+state.subscribe((s, prev) => console.log('state updated:', s));
+
+// listen: only future changes
+state.listen((s, prev) => console.log('future state:', s));
+
+// update via function or direct assignment
+state.update(prev => ({ ...prev, loading: false }));
+state.value = { ...state.value, data: [] };
+```
+
+## 4. Derived Values
+
+```javascript
+import { computed } from 'typecomposer';
+
+const isReady = computed(() => !state.value.loading && !!state.value.data);
+```
+
+## API Reference
+
+- subscribe(handler: `(newValue, oldValue) => void`): boolean
+- listen(handler: `(newValue, oldValue) => void`): boolean
+- update(updater: `(prev) => next | next`): void
+- value: `T` get/set
+
+## 5. When to Use RefState
+
+- Component-local stores
+- Simple global state without full store libraries
+- Reactive derived flags via `computed`

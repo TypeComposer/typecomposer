@@ -1,0 +1,57 @@
+# Overview
+
+`RefProperty<T>` binds a specific property from an object or component into a reactive reference.
+
+## 1. Creating a RefProperty
+
+```javascript
+import { RefProperty } from 'typecomposer';
+
+const obj = { count: 1 };
+const countProp = new RefProperty(obj, 'count');
+
+// set value
+countProp.value = 2; // obj.count becomes 2
+
+// update
+countProp.update(prev => prev + 1);
+```
+
+## 2. Binding to UI
+
+```javascript
+import { DivElement } from 'typecomposer';
+
+const label = new DivElement({ text: countProp });
+```
+
+## 3. Subscribing to Changes
+
+```javascript
+// subscribe: immediate emit (newValue, oldValue)
+countProp.subscribe((n, prev) => console.log('count:', n, 'prev:', prev));
+
+// listen: only future changes
+countProp.listen((n, prev) => console.log('future count:', n));
+```
+
+## 4. Derived Values
+
+```javascript
+import { computed } from 'typecomposer';
+
+const doubled = computed(() => countProp.value * 2);
+```
+
+## API Reference
+
+- subscribe(handler: `(newValue, oldValue) => void`): boolean
+- listen(handler: `(newValue, oldValue) => void`): boolean
+- update(updater: `(prev) => next | next`): void
+- value: `T` get/set
+
+## 5. When to Use RefProperty
+
+- Expose a single property reactively from complex objects
+- Bind property to UI without copying entire object
+- Useful for form inputs and single-field updates

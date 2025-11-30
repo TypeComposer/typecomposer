@@ -1,0 +1,84 @@
+# Overview
+
+`computed` creates a derived, lazy-evaluated reactive value from other refs. It re-runs when dependencies change.
+
+## 1. Creating a Computed
+
+```javascript
+import { computed, refString } from 'typecomposer';
+
+const first = refString('John');
+const last = refString('Doe');
+const full = computed(() => `${first.value} ${last.value}`);
+```
+
+## 2. Using in UI
+
+```javascript
+import { DivElement } from 'typecomposer';
+
+const el = new DivElement({ text: full });
+
+first.value = 'Jane'; // el updates to 'Jane Doe'
+```
+
+## 3. Function and Template Usage
+
+```javascript
+// function form
+const greeting = computed(() => 'test');
+
+// template-literal forms
+const refTest = refString('value');
+const tplFn = computed(() => `test ${refTest.value}`);
+
+// tagged template form (reactive string without an arrow)
+const tplTag = computed`test ${refTest.value}`;
+
+// global short alias (provided by TypeComposer)
+// `C` is globally available; no import needed
+const tplAlias = C`hello ${refTest.value}`;
+```
+
+## 4. Router Integration (Example)
+
+Use `computed` to build reactive route parts or titles.
+
+```javascript
+import { Router, computed, refString } from 'typecomposer';
+
+const section = refString('home');
+const path = computed(() => `/${section.value}`);
+
+Router.navigate(path.value); // reacts when section changes
+```
+
+## 6. Using computed in component props
+
+```javascript
+import { DivElement, refObject, computed } from 'typecomposer';
+
+const user = refObject({ name: 'John', age: 30 });
+
+// function form
+const info1 = new DivElement({
+	text: computed(() => `${user.value.name} (${user.value.age})`),
+});
+
+// tagged template form
+const info2 = new DivElement({
+	text: computed`${user.value.name} (${user.value.age})`,
+});
+
+// alias (global)
+// C is globally available, no import required
+const info3 = new DivElement({
+	text: C`${user.value.name} (${user.value.age})`,
+});
+```
+
+## 5. When to Use computed
+
+- Derive text, classes, styles from refs
+- Combine multiple refs into a single reactive output
+- Cheap memo-like recomputation on dependency changes

@@ -58,6 +58,7 @@ declare global {
     createFragment: (...children: any[]) => DocumentFragment;
     defineElement(name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions): void;
     deepCopy: <T>(value: T) => T;
+    generateUniqueId: (prefix?: string) => string;
     inject: <T extends new (...args: any[]) => any>(classType: T) => InstanceType<T>;
     Fragment: string;
   };
@@ -246,6 +247,7 @@ declare global {
     remove(tag: string): void;
     has(tag: string): boolean;
     toggle(tag: string): void;
+    replace(oldTag: string, newTag: string): void;
     clear(): void;
     getReferences(): CustomElementConstructor[];
     toString(): string;

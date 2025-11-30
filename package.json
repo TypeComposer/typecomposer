@@ -1,6 +1,6 @@
 {
   "name": "@typecomposer/typecomposer",
-  "version": "0.1.55",
+  "version": "0.1.56",
   "description": "Build modern web interfaces without touching a single line of HTML",
   "main": "dist/index.js",
   "module": "dist/index.js",

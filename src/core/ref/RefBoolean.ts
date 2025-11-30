@@ -153,4 +153,18 @@ export class RefBoolean implements Boolean, ref<boolean> {
   toString(): string {
     return this.container.toString();
   }
+
+  update(updater: ((previousValue: boolean) => boolean) | boolean) {
+    if (typeof updater === "function") {
+      this.value = updater(this.value);
+    } else {
+      this.value = updater;
+    }
+  }
+  /** 
+   * Toggles the boolean value.
+   */
+  toggle() {
+    this.value = !this.value;
+  }
 }

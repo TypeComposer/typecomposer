@@ -107,6 +107,11 @@ function copyDebugPorject() {
     const { project } = JSON.parse(jsonContent);
     for (const projectPath of project) {
       console.log("Copying to project:", projectPath);
+      // se nao existir a pasta node_modules/typecomposer, criar
+      const typecomposerPath = path.join(projectPath, "node_modules", "typecomposer");
+      if (!fs.existsSync(typecomposerPath)) {
+        fs.mkdirSync(typecomposerPath, { recursive: true });
+      }
       const command = `rm -rf '${projectPath}/node_modules/typecomposer/*' -y && cp -r ./dist/* '${projectPath}/node_modules/typecomposer'`;
       execSync(command, { stdio: "inherit" });
     }

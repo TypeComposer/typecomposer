@@ -1,0 +1,63 @@
+# Overview
+
+`RefNumber` provides a reactive numeric reference for TypeComposer, ideal for values like counters, sizes, and numeric inputs.
+
+## 1. Creating a RefNumber
+
+```javascript
+import { ref, refNumber } from 'typecomposer';
+
+// preferred generic creator
+const count = ref(0);
+
+// typed convenience
+const price = refNumber(10);
+
+count.value += 1;
+```
+
+## 2. Binding to Components/Elements
+
+Bind to text, attributes, input values, or styles.
+
+```javascript
+import { DivElement, InputElement, ref } from 'typecomposer';
+
+const count = ref(0);
+
+const label = new DivElement({ text: count });
+const input = new InputElement({ value: count }); // two-way: typing updates count
+```
+
+## 3. Subscribing to Changes
+
+```javascript
+// subscribe: immediate emit (newValue, oldValue)
+count.subscribe((n, prev) => {
+  console.log('count:', n, 'prev:', prev);
+});
+
+// listen: only future changes
+count.listen((n, prev) => {
+  console.log('future count:', n);
+});
+
+// update via function
+count.update(prev => prev + 1);
+```
+
+## 4. Computed Values
+
+```javascript
+import { computed, ref } from 'typecomposer';
+
+const price = ref(10);
+const qty = ref(2);
+const total = computed(() => price.value * qty.value);
+```
+
+## 5. When to Use RefNumber
+
+- Numeric inputs and counters
+- Sizes, dimensions, computed totals
+- Any numeric state that should update UI reactively
