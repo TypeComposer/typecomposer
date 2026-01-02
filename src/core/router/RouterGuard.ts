@@ -14,3 +14,5 @@ export abstract class RouterGuard {
   abstract beforeEach(response: GuardResponse): void;
 
 }
+
+export type RouterGuardType = typeof RouterGuard;

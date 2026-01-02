@@ -59,6 +59,7 @@ declare global {
     defineElement(name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions): void;
     deepCopy: <T>(value: T) => T;
     generateUniqueId: (prefix?: string) => string;
+    hasInject: <T extends new (...args: any[]) => any>(classType: T) => boolean;
     inject: <T extends new (...args: any[]) => any>(classType: T) => InstanceType<T>;
     Fragment: string;
   };

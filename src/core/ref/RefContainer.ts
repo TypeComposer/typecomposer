@@ -15,7 +15,7 @@ export class RefContainer {
   #subscribers: IRefSubscriber[] = [];
   readonly id = `${Math.random().toString(36).substring(2, 4)}${RefContainer.#index++}`;
 
-  constructor(public value?: any, public readonly root?: RefContainer) {}
+  constructor(public value?: any, public readonly root?: RefContainer) { }
 
   emit(subscriber: IRefSubscriber, value: any, oldValue: any): boolean {
     if (subscriber.target instanceof Function) {
@@ -34,7 +34,7 @@ export class RefContainer {
     return true;
   }
 
-  info() {}
+  info() { }
 
   emitAll(propertyName: string | symbol, value: any, oldValue: any): any {
     this.#subscribers.forEach((s) => this.emit(s, value, oldValue));
@@ -104,6 +104,7 @@ export class RefContainer {
 
   toJSON() {
     try {
+      console.log("toJSON", this.value, " type:", typeof this.value, " instance:", JSON.stringify(this.value));
       return JSON.parse(JSON.stringify(this.value));
     } catch (e) {
       return {};

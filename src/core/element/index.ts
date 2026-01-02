@@ -8,7 +8,7 @@ export { DivElement } from "./div/DivElement";
 export { FieldSetElement } from "./fieldset/FieldSetElement";
 export { FormElement } from "./form/FormElement";
 export { ImageElement } from "./image/ImageElement";
-export { InputElement } from "./input/InputElement";
+export { InputElement, type InputType } from "./input/InputElement";
 export { LabelElement } from "./label/LabelElement";
 export { LegendElement } from "./legend/LegendElement";
 export { ListItemElement } from "./listitem/ListItemElement";

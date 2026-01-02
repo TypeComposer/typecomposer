@@ -65,11 +65,11 @@ export class RouteView extends Component {
     }
     if (routePage.component instanceof Function && routePage.component.prototype instanceof Element) {
       // @ts-ignore
-      routePage.build = routePage.build || new routePage.component!(routePage.props || {});
+      routePage.build = routePage.build || new routePage.component!(routePage.extras?.queryParams || {});
     } else if (!routePage.build) {
       // @ts-ignore
       const mod = await routePage.component();
-      routePage.build = new mod.default(routePage.props || {});
+      routePage.build = new mod.default(routePage.extras?.queryParams || {});
     }
 
     this.routePage = routePage;

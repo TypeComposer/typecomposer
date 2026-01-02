@@ -4,8 +4,10 @@ import {
   LabelElement,
   refString,
   ElementType,
+  InputType,
 } from "../../";
 import "./TextField.css";
+
 
 export class TextField extends Component {
   static readonly TAG: string = "tc-text-field";
@@ -23,6 +25,7 @@ export class TextField extends Component {
     if (props?.name) this.name = props.name;
     // @ts-ignore
     if (props?.disabled) this.disabled = props.disabled;
+    if (props?.type) this.type = props.type;
     this.value = props?.value;
     this.inputElement.addEventListener("change", (e) => this.dispatchEvent(new Event("change")), { capture: true });
     this.inputElement.addEventListener("input", (e) => this.dispatchEvent(new Event("input")), { capture: true });
@@ -61,6 +64,14 @@ export class TextField extends Component {
   set value(v: string | refString) {
     // @ts-ignore
     this.inputElement.value = v || "";
+  }
+
+  get type(): InputType {
+    return this.inputElement.type;
+  }
+
+  set type(v: InputType) {
+    this.inputElement.type = v;
   }
 
 }

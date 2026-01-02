@@ -39,6 +39,7 @@ import { ElementType, Component, refString, refNumber, ref } from "../../";
 // 	// */
 // 	oninputDelay?: (value: string) => void;
 // }
+export type InputType = "text" | "password" | "email" | "number" | "tel" | "url" | "search" | "date" | "datetime-local" | "time" | "color" | (string & {});
 
 export class InputElement extends HTMLInputElement implements IComponent {
   static readonly TAG: string = "tc-input-element";
@@ -68,6 +69,14 @@ export class InputElement extends HTMLInputElement implements IComponent {
     if (props?.max !== undefined) this.max = props?.max;
     if (props?.pattern) this.pattern = props?.pattern;
     if (props?.required) this.required = props?.required || false;
+  }
+
+  get type(): string {
+    return super.type;
+  }
+
+  set type(v: InputType) {
+    super.type = v;
   }
 
   // get validation(): RegisterOptions | undefined {

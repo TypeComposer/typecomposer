@@ -30,6 +30,7 @@ export class __App__ {
   private translateComputed: any = undefined;
   #theme: ref<theme> = ref(this.getThemePreferred());
   #language: ref<string> = ref(this.getLanguagePreferred());
+  #onbeforeunload: ((this: Window, ev: BeforeUnloadEvent) => any) | null = null;
   #themeListener = (e: MediaQueryListEvent) => {
     this.theme.value = e.matches ? "dark" : "light";
   };
@@ -104,7 +105,7 @@ export class __App__ {
     } else {
       if (!document.body) document.body = document.createElement("body");
       // @ts-ignore
-      TypeComposer.initComponent(page, document.body);
+      // TypeComposer.initComponent(page, document.body);
       document.body.appendChild(page);
     }
     this.component = page;
@@ -222,5 +223,23 @@ export class __App__ {
     } else if (document["msExitFullscreen"]) {
       document["msExitFullscreen"]();
     }
+  }
+
+  set onBeforeUnload(handler: (this: Window, ev: BeforeUnloadEvent) => boolean) {
+    if (handler == null) return;
+    this.#onbeforeunload = (ev: BeforeUnloadEvent) => {
+      if (handler.call(window, ev) === false) {
+        ev.preventDefault();
+        ev.returnValue = "";
+        return "";
+      }
+      return undefined;
+    }
+    window.addEventListener("beforeunload", this.#onbeforeunload, { capture: true });
+  }
+
+  removeOnBeforeUnload() {
+    window.removeEventListener("beforeunload", this.#onbeforeunload, { capture: true });
+    this.#onbeforeunload = null;
   }
 }

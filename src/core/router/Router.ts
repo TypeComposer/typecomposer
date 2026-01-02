@@ -1,18 +1,53 @@
-import { RouteView, AsyncComponentLoader } from "../../";
+import { RouteView, AsyncComponentLoader, ref, refObject } from "../../";
 import { App, DivElement } from "../../";
-import { RouterGuard } from "./RouterGuard";
+import { RouterGuard, RouterGuardType } from "./RouterGuard";
 
 export type RouterHistoryMode = "history" | "hash" | "memory" | "static" | "abstract";
 export type ElementFactory = (...args: any[]) => HTMLElement;
+// resolve?: ResolveData;
+/**
+ *
+ * How to handle query parameters in a router link.
+ * One of:
+ * - `"merge"` : Merge new parameters with current parameters.
+ * - `"preserve"` : Preserve current parameters.
+ * - `"replace"` : Replace current parameters with new parameters. This is the default behavior.
+ * - `""` : For legacy reasons, the same as `'replace'`.
+ *
+ * @see {@link UrlCreationOptions#queryParamsHandling}
+ * @see {@link RouterLink}
+ * @publicApi
+ */
+export type QueryParamsHandling = 'merge' | 'preserve' | 'replace' | '';
+
+/**
+ * A collection of matrix and query URL parameters.
+ * @see {@link convertToParamMap}
+ * @see {@link ParamMap}
+ *
+ * @publicApi
+ */
+type Params = {
+  [key: string]: any;
+};
+
+type NavigationExtras = {
+  queryParamsHandling?: QueryParamsHandling;
+  queryParams?: Params;
+};
+
+export type ResourceData = { [key: string]: any } | ((params: Params) => { [key: string]: any } | Promise<{ [key: string]: any }>);
 
 export interface RoutePage {
   path: string;
-  props?: { [key: string]: any };
+  extras?: { queryParamsHandling?: QueryParamsHandling, queryParams?: Params };
+  // props?: Params;
   component?: ComponentType | AsyncComponentLoader | ElementFactory;
   children?: RoutePage[];
   redirect?: string;
   title?: string;
-  guard?: RouterGuard;
+  resource?: ResourceData;
+  guard?: RouterGuard | RouterGuardType
 }
 
 interface RoutePageBuild extends RoutePage {
@@ -91,7 +126,7 @@ function matchRoute(url: URL, routes: RouteOutput[]): RouteMatch | null {
           redirect: r.redirect,
           build: undefined,
         })),
-        props: route.props || {},
+        props: route.extras?.queryParams || {},
         params: getRouterParams(route, url),
       };
     }
@@ -122,6 +157,7 @@ export class Router {
   static #router: Router;
   #history: RouterHistoryMode;
   #props: any = {};
+  #resourceData = refObject({});
   private routes: RouteOutput[] = [];
   private url: string = window.location.pathname;
   private urlValid: string = "";
@@ -138,7 +174,7 @@ export class Router {
    * @returns {void}
    */
   static readonly PATH_WILDCARD = "**";
-  public beforeEach: (to: RouteMatch) => void = () => {};
+  public beforeEach: (to: RouteMatch) => void = () => { };
 
   private constructor(data: RoutePage[], history: RouterHistoryMode, pageNotFound?: ComponentType) {
     if (Router.#router) throw new Error("Router already exists");
@@ -195,6 +231,42 @@ export class Router {
     return fn.constructor.name === "AsyncFunction";
   }
 
+  get #params(): Params {
+    try {
+      const params = Object.fromEntries(
+        new URLSearchParams(window.location.search).entries()
+      );
+      return (JSON.parse(JSON.stringify(params), (_key, value) => {
+        if (value === "true") return true;
+        if (value === "false") return false;
+        if (!isNaN(value) && value !== "") return Number(value);
+        if (value === "null") return null;
+        if (value === "undefined") return undefined;
+        if (typeof value === "string" && value.startsWith("{") && value.endsWith("}")) {
+          try {
+            return JSON.parse(value);
+          } catch {
+            return value;
+          }
+        }
+        if (typeof value === "string" && value.startsWith("[") && value.endsWith("]")) {
+          try {
+            return JSON.parse(value);
+          } catch {
+            return value;
+          }
+        }
+        if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(value)) {
+          return new Date(value);
+        }
+        return value;
+      }));
+    } catch {
+      return {};
+    }
+  }
+
+
   private async buildRoutePage(match: RouteMatch | null): Promise<void> {
     let title = "";
     this.#props = match?.params || {};
@@ -207,7 +279,7 @@ export class Router {
       if (this.match) {
         for (let i = 0; i < match.routers.length; i++) {
           const route = match.routers[i];
-          if (route.path == this.match?.routers[i].path) {
+          if (route.path == this.match?.routers[i]?.path) {
             route.build = this.match.routers[i].build;
           }
         }
@@ -242,6 +314,20 @@ export class Router {
 
   private async checkGuard(match: RouteMatch): Promise<boolean> {
     const guards = match.routers.map((route) => route.guard).filter(Boolean);
+    for (let i = 0; i < guards.length; i++) {
+      const guard = guards[i];
+      if (typeof guard === "function") {
+        // @ts-ignore
+        if (TypeComposer.hasInject(guard)) {
+          // @ts-ignore
+          guards[i] = TypeComposer.inject(guard, 0, this);
+        }
+        else {
+          // @ts-ignore
+          guards[i] = new guard();
+        }
+      }
+    }
     let result: boolean = true;
     for await (const guard of guards) {
       const promise = new Promise<boolean>((resolve) => {
@@ -262,9 +348,10 @@ export class Router {
             resolve(false);
           },
         };
-        guard.beforeEach(response);
+        // @ts-ignore
+        guard?.beforeEach(response);
       });
-      result = await promise;
+      result = await promise
       if (typeof result === "string") {
         Router.go(result);
         return false;
@@ -292,8 +379,17 @@ export class Router {
     } else window.location.reload();
   }
 
+
+  static get resource(): ref<{ [key: string]: any }> {
+    return this.#router.#resourceData;
+  }
+
   static get props(): { [key: string]: any } {
     return this.#router.#props || {};
+  }
+
+  static get params(): Params {
+    return this.#router.#params || {};
   }
 
   static get history(): RouterHistoryMode {
@@ -307,22 +403,21 @@ export class Router {
     return baseUrl + (queryString ? "?" + queryString : "");
   }
 
-  static async go(url: string, props?: {}): Promise<void> {
+  static async go(url: string, extras?: NavigationExtras): Promise<void> {
     if (!Router.#router) throw new Error("Router not initialized");
     if (!url) return;
     if (!url.startsWith("/")) url = "/" + url;
-    const newUrl = Router.buildURL(url, props || {});
-
+    const newUrl = Router.buildURL(url, extras?.queryParams || {});
     // Handle different routing modes
     if (Router.#router.#history === "history") {
-      history.pushState(props || {}, "", newUrl);
+      history.pushState(extras?.queryParams || {}, "", newUrl);
       Router.#router.handleRoute();
     } else if (Router.#router.#history === "hash") {
       window.location.hash = newUrl;
     } else {
       // For memory, static, and abstract modes, update internal state and trigger route handling
       Router.#router.url = url;
-      Router.#router.#props = props || {};
+      Router.#router.#props = extras?.queryParams || {};
       Router.#router.handleRoute();
     }
     // Router.#router?.handleRoute();

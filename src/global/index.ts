@@ -195,6 +195,9 @@ const TypeComposer = {
     fragment.append(...children);
     return fragment;
   },
+  hasInject: <T extends new (...args: any[]) => any>(classType: T): boolean => {
+    return TypeComposer.injectServices.has(classType);
+  },
   inject: <T extends new (...args: any[]) => any>(classType: T, type: InjectedType = InjectedType.ROOT, component?: Component, variantName?: string): InstanceType<T> => {
     if (!TypeComposer.injectServices.has(classType)) {
       throw new Error(`Service ${classType.name} is not registered. Please use the @Service decorator to register it.`);
@@ -931,17 +934,25 @@ function replaceElements(parentNode: HTMLElement, start: Comment, end: Comment, 
     if (act === "insert") parentNode.insertBefore(element, before);
   }
 }
+
+
+function onCreateConnected(node: any, parentElement: Node, isConnected: boolean = parentElement.isConnected) {
+  if (node && parentElement && isConnected && node instanceof Node && !node[parentComponentSymbol]) {
+    // @ts-ignore
+    node[parentComponentSymbol] = parentElement;
+    // @ts-ignore
+    node.onCreate?.();
+    node.childNodes.forEach((childNode: Node) => onCreateConnected(childNode, node, isConnected));
+  }
+}
+
 const originalAppend = Element.prototype.append;
 // append
 Element.prototype.append = function (...nodes: (Node | string | ref)[]) {
   for (const node of nodes) {
-    if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
-      // @ts-ignore
-      node[parentComponentSymbol] = this;
-      // @ts-ignore
-      node.onCreate?.();
-    }
+    onCreateConnected(node, this);
   }
+  // console.log("append", nodes);
   const isRef = nodes.find((node) => node instanceof ref);
   if (isRef) {
     for (const n of nodes) {
@@ -961,12 +972,7 @@ Element.prototype.append = function (...nodes: (Node | string | ref)[]) {
 const originalAppendFragment = DocumentFragment.prototype.append;
 DocumentFragment.prototype.append = function (...nodes: (Node | string | ref)[]) {
   for (const node of nodes) {
-    if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
-      // @ts-ignore
-      node[parentComponentSymbol] = this;
-      // @ts-ignore
-      node.onCreate?.();
-    }
+    onCreateConnected(node, this);
   }
   originalAppendFragment.call(this, ...nodes);
 };
@@ -974,12 +980,7 @@ DocumentFragment.prototype.append = function (...nodes: (Node | string | ref)[])
 const originalPrependFragment = DocumentFragment.prototype.prepend;
 DocumentFragment.prototype.prepend = function (...nodes: (Node | string | ref)[]) {
   for (const node of nodes) {
-    if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
-      // @ts-ignore
-      node[parentComponentSymbol] = this;
-      // @ts-ignore
-      node.onCreate?.();
-    }
+    onCreateConnected(node, this);
   }
   originalPrependFragment.call(this, ...nodes);
 };
@@ -987,12 +988,7 @@ DocumentFragment.prototype.prepend = function (...nodes: (Node | string | ref)[]
 const originalPrepend = Element.prototype.prepend;
 Element.prototype.prepend = function (...nodes: (Node | string | ref)[]) {
   for (const node of nodes) {
-    if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
-      // @ts-ignore
-      node[parentComponentSymbol] = this;
-      // @ts-ignore
-      node.onCreate?.();
-    }
+    onCreateConnected(node, this);
   }
   originalPrepend.call(this, ...nodes);
 };
@@ -1000,24 +996,14 @@ Element.prototype.prepend = function (...nodes: (Node | string | ref)[]) {
 const originalAppendChild = Element.prototype.appendChild;
 
 Element.prototype.appendChild = function <T extends Node>(node: T): T {
-  if (node instanceof Element && !node[parentComponentSymbol]) {
-    // @ts-ignore
-    node[parentComponentSymbol] = this;
-    // @ts-ignore
-    node.onCreate?.();
-  }
+  onCreateConnected(node, this);
   return originalAppendChild.call(this, node);
 }
 
 const originalInsertBefore = Element.prototype.insertBefore;
 
 Element.prototype.insertBefore = function <T extends Node>(newNode: T, referenceNode: Node | null): T {
-  if (newNode instanceof Element && !newNode[parentComponentSymbol]) {
-    // @ts-ignore
-    newNode[parentComponentSymbol] = this;
-    // @ts-ignore
-    newNode.onCreate?.();
-  }
+  onCreateConnected(newNode, this);
   return originalInsertBefore.call(this, newNode, referenceNode);
 };
 
@@ -1025,12 +1011,7 @@ Element.prototype.insertBefore = function <T extends Node>(newNode: T, reference
 const originalReplaceChild = Element.prototype.replaceChild;
 // @ts-ignore
 Element.prototype.replaceChild = function <T extends Node>(newChild: T, oldChild: Node): T {
-  if (newChild instanceof Element && !newChild[parentComponentSymbol]) {
-    // @ts-ignore
-    newChild[parentComponentSymbol] = this;
-    // @ts-ignore
-    newChild.onCreate?.();
-  }
+  onCreateConnected(newChild, this);
   return originalReplaceChild.call(this, newChild, oldChild);
 }
 
@@ -1038,12 +1019,7 @@ Element.prototype.replaceChild = function <T extends Node>(newChild: T, oldChild
 const originalReplaceWith = Element.prototype.replaceWith;
 Element.prototype.replaceWith = function (...nodes: (Node | string | ref)[]) {
   for (const node of nodes) {
-    if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
-      // @ts-ignore
-      node[parentComponentSymbol] = this.parentElement;
-      // @ts-ignore
-      node.onCreate?.();
-    }
+    onCreateConnected(node, this.parentElement!);
   }
   originalReplaceWith.call(this, ...nodes);
 };
@@ -1051,12 +1027,7 @@ Element.prototype.replaceWith = function (...nodes: (Node | string | ref)[]) {
 // insertBefore
 const originalInsertAdjacentElement = Element.prototype.insertAdjacentElement;
 Element.prototype.insertAdjacentElement = function (position: InsertPosition, element: Element): Element | null {
-  if (this.isConnected && element instanceof Node && !element[parentComponentSymbol]) {
-    // @ts-ignore
-    element[parentComponentSymbol] = this;
-    // @ts-ignore
-    element.onCreate?.();
-  }
+  onCreateConnected(element, this);
   return originalInsertAdjacentElement.call(this, position, element);
 };
 
@@ -1064,12 +1035,7 @@ Element.prototype.insertAdjacentElement = function (position: InsertPosition, el
 const originalBefore = Element.prototype.before;
 Element.prototype.before = function (...nodes: (Node | string | ref)[]) {
   for (const node of nodes) {
-    if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
-      // @ts-ignore
-      node[parentComponentSymbol] = this.parentElement;
-      // @ts-ignore
-      node.onCreate?.();
-    }
+    onCreateConnected(node, this.parentElement!);
   }
   originalBefore.call(this, ...nodes);
 }
@@ -1078,12 +1044,7 @@ Element.prototype.before = function (...nodes: (Node | string | ref)[]) {
 const originalAfter = Element.prototype.after;
 Element.prototype.after = function (...nodes: (Node | string | ref)[]) {
   for (const node of nodes) {
-    if (this.isConnected && node instanceof Node && !node[parentComponentSymbol]) {
-      // @ts-ignore
-      node[parentComponentSymbol] = this.parentElement;
-      // @ts-ignore
-      node.onCreate?.();
-    }
+    onCreateConnected(node, this.parentElement!);
   }
   originalAfter.call(this, ...nodes);
 };

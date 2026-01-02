@@ -57,11 +57,13 @@ class NotEmitted {
 
 class RefObjectContainer extends RefContainer {
   declare root: RefContainer;
+  #notEmitted: boolean = false;
   instance: { value: any } = { value: null };
   constructor(value: object, root?: RefContainer) {
     super(null, root as any);
     this.root = root;
-    this.value = createObservador(value || {}, this);
+    this.#notEmitted = (value && value instanceof NotEmitted);
+    this.value = (value && value instanceof NotEmitted) ? value.value : createObservador(value || {}, this);
   }
 
   valueOf() {
@@ -78,7 +80,7 @@ class RefObjectContainer extends RefContainer {
     const newValue = typeof updater === "function" ? updater(this.value) : updater;
     if (this.value === newValue)
       return;
-    if (newValue === null || newValue === undefined || newValue === false)
+    if (this.#notEmitted || newValue === null || newValue === undefined || newValue === false)
       this.value = newValue;
     else if (newValue && typeof newValue === "object" && Object.getPrototypeOf(newValue) !== Object.prototype) {
       this.value = newValue;
@@ -102,15 +104,23 @@ class RefObjectContainer extends RefContainer {
   emitAll(propertyName: string | symbol, value: any) {
     super.emitAll(propertyName, value, value);
   }
+
+  toJSON() {
+    const obj = {};
+    for (const key in this.value) {
+      obj[key] = this.value[key]?.valueOf() || this.value[key];
+    }
+    return obj;
+  }
 }
 
 
-function createObservador<T extends object>(obj: T, container: RefObjectContainer): refObject<T> {
+function createObservador<T extends object>(obj: T, container: RefObjectContainer): refValue<T> {
   if (Object.getPrototypeOf(obj) !== Object.prototype) {
-    return obj as refObject<T>;
+    return obj as refValue<T>;
   }
   convertObjectInObjectRefDeep(obj);
-  const refObject = new Proxy(obj || ({} as T), {
+  const refValue = new Proxy(obj || ({} as T), {
     // @ts-ignore
     get(target, key: keyof T, receiver) {
       // if (key == "toString") return JSON.stringify(obj);
@@ -143,11 +153,11 @@ function createObservador<T extends object>(obj: T, container: RefObjectContaine
       return receiver;
     },
   }) as T & { toJSON: () => T };
-  container.value = refObject;
-  return refObject as refObject<T>;
+  container.value = refValue;
+  return refValue as refValue<T>;
 }
 
-type refObject<T> = T extends string | String
+type refValue<T> = T extends string | String
   ? refString
   : T extends number | Number
   ? refNumber
@@ -160,7 +170,7 @@ type refObject<T> = T extends string | String
   : T extends Set<infer SU>
   ? refSet<SU>
   : T extends object
-  ? { [K in keyof T]: refObject<T[K]> }
+  ? { [K in keyof T]: refValue<T[K]> }
   : T extends never
   ? T
   : T;
@@ -174,7 +184,7 @@ interface RefObject<T> {
   /**
    * The internal reference to another RefObject instance (if applicable).
    */
-  readonly value: refObject<T>;
+  readonly value: refValue<T>;
 
   /**
    * Subscribes a function to be notified whenever the value changes.
@@ -326,7 +336,7 @@ export function ref<T = any>(value?: T): DynamicRef<T> {
   }
   const container: RefObjectContainer = new RefObjectContainer(value as object);
   const instance = {
-    value: container.value as refObject<T>,
+    value: container.value as refValue<T>,
     subscribe: container.subscribeAndEmit.bind(container),
     listen: container.listen.bind(container),
     unsubscribe: container.unsubscribe.bind(container),
@@ -338,7 +348,7 @@ export function ref<T = any>(value?: T): DynamicRef<T> {
   };
   container["instance"] = instance;
   Object.defineProperty(instance, Symbol.iterator, {
-    value: function* (this: refObject<any>) {
+    value: function* (this: refValue<any>) {
       for (const key in instance.value) {
         yield instance.value[key]?.valueOf() || instance.value[key];
       }
@@ -358,6 +368,16 @@ export function ref<T = any>(value?: T): DynamicRef<T> {
   return instance as any;
 }
 
+export function refObject(value: object): RefObject<any> {
+  return ref(new NotEmitted(value));
+}
+
+
+export type refObject<T extends object> = RefObject<T>;
+
+/**
+ * A union type representing either a primitive string or a RefString.
+ */
 export type ref<T = any> = DynamicRef<T>;
 
 Object.defineProperty(ref, Symbol.hasInstance, {
