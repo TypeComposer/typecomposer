@@ -157,13 +157,14 @@ const TypeComposer = {
       delete props?.onInit;
       delete props?.ref;
       delete props?.key;
+      delete props?.visible;
       if (style) props.style = {};
       const ElementType: { [key: string]: any } = props || {};
       const el = isComponent ? new tag(ElementType) : document.createElement(tag);
       el[parentComponentSymbol] = parentElement;
       if (isValideKey) key.controller.setCache(key.key, el);
       if (style) el.setStyle(style);
-      if (className) el.addClassName(className);
+      if (className) el.className = className;
       if (refKey) refKey(el);
       Component.applyProps(el, ElementType);
       const appendChild = (parent: Element, child: any) => {
@@ -1081,6 +1082,23 @@ Array.prototype.clear = function () {
     },
   });
 }
+
+// className
+const originalClassName = Object.getOwnPropertyDescriptor(Element.prototype, "className");
+Object.defineProperty(Element.prototype, "className", {
+  get: function () {
+    return originalClassName?.get?.call(this);
+  },
+  set: function (value: string | ref<string>) {
+    console.log("set className", value);
+    if (value instanceof ref) {
+      value.subscribe(this, "className");
+    } else {
+      originalClassName?.set?.call(this, value);
+    }
+  },
+});
+
 
 export interface HTMLComponent {
   style?: StyleProperties;

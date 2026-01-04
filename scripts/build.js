@@ -4,7 +4,7 @@ const { execSync } = require("child_process");
 
 const packageJson = {
   name: "typecomposer",
-  version: "0.1.47",
+  version: "0.1.61",
   repository: {
     type: "git",
     url: "https://github.com/zico15",
@@ -15,7 +15,7 @@ const packageJson = {
   types: "index.d.ts",
   type: "module",
   sideEffects: ["./global/index.js", "./core/styles/**"],
-  files: ["README.md", "core", "global", "index.js", "index.d.ts", "index.js.map", "typings/index.d.ts", "assets", "translation", "LICENSE"],
+  files: ["README.md", "core", "global", "index.js", "index.d.ts", "index.js.map", "typings/index.d.ts", "assets", "translation", 'styles', 'theme.css', "LICENSE"],
   keywords: ["typecomposer"],
   preferGlobal: true,
   author: "Ezequiel",
