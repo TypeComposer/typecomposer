@@ -50,4 +50,4 @@ jobs:
         run: npm run test:run
 
       - name: Build package
-        run: node scripts/build.js
+        run: npm run build
