@@ -116,3 +116,33 @@ describe('Router – utility methods', () => {
     warnSpy.mockRestore();
   });
 });
+// ─── Query parameters preservation (audit item 3) ────────────────────────────
+
+describe('Router – queryParams in memory mode', () => {
+  it('single query param: Router.props has { q: "hello" } after go("/search", { queryParams: { q: "hello" } })', async () => {
+    await Router.go('/search', { queryParams: { q: 'hello' } });
+    expect(Router.props).toMatchObject({ q: 'hello' });
+  });
+
+  it('multiple query params are all preserved in Router.props', async () => {
+    await Router.go('/search', { queryParams: { q: 'test', page: '2', sort: 'asc' } });
+    expect(Router.props).toMatchObject({ q: 'test', page: '2', sort: 'asc' });
+  });
+
+  it('navigating without queryParams yields empty Router.props', async () => {
+    await Router.go('/search');
+    expect(Router.props).toEqual({});
+  });
+
+  it('empty queryParams object yields empty Router.props', async () => {
+    await Router.go('/search', { queryParams: {} });
+    expect(Router.props).toEqual({});
+  });
+
+  it('queryParams do not bleed into the next navigation without params', async () => {
+    await Router.go('/search', { queryParams: { q: 'bleed' } });
+    expect(Router.props).toMatchObject({ q: 'bleed' });
+    await Router.go('/about');
+    expect(Router.props).toEqual({});
+  });
+});
