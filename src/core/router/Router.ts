@@ -416,7 +416,8 @@ export class Router {
       window.location.hash = newUrl;
     } else {
       // For memory, static, and abstract modes, update internal state and trigger route handling
-      Router.#router.url = url;
+      // Include query params in the internal URL so handleRoute() / getRouterParams() can parse them.
+      Router.#router.url = newUrl;
       Router.#router.#props = extras?.queryParams || {};
       Router.#router.handleRoute();
     }
