@@ -1,49 +1,7 @@
-/**
- * tests/router.test.ts
- *
- * Router tests — memory mode.
- *
- * The Router class is a process-level singleton (private static `#router`).
- * It cannot be reset between tests without modifying production code.
- * Strategy: create the Router ONCE in `beforeAll`, then sequence all navigation
- * assertions.
- *
- * Implementation notes (derived from reading Router.ts source):
- *
- *   Router.go() in memory/abstract mode:
- *     1. Sets `this.url = url`  (synchronous — pathname reflects immediately)
- *     2. Sets `this.#props = extras.queryParams || {}`
- *     3. Calls `this.handleRoute()` → `buildRoutePage(match)` (fire-and-forget)
- *     4. `buildRoutePage` overwrites `#props` with `match.params || {}`.
- *        For routes without :param segments, `Router.props` returns `{}`.
- *
- *   document.title caveat:
- *     `App.setPage(new Component())` is the full rendering pipeline; in the
- *     happy-dom test environment the component build may silently reject if
- *     custom element registration is incomplete, preventing the `document.title`
- *     assignment inside `buildRoutePage` from ever executing.  We document this
- *     limitation in the test below rather than assert a value that depends on
- *     the full rendering pipeline.
- *
- * Tests covered (13):
- *   - Router.history
- *   - Router.pathname at creation and after navigation
- *   - Router.go — single and multi-hop navigation
- *   - Router.go unknown path — pathname reflects request
- *   - Router.go resolves with undefined
- *   - Router.props returns {} for simple routes
- *   - Redirect route: pathname settles to target
- *   - document.title — asserted as string (pipeline limitation documented)
- *   - Router.reload does not throw
- *   - Router.back() / Router.forward() — warn in memory mode
- *   - Router.create — throws on second call
- */
-
 import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { Router } from '../src/core/router/Router';
 import { DivElement } from '../src/global/index';
 
-/** Flush pending microtasks. */
 async function flush(ticks = 5) {
   for (let i = 0; i < ticks; i++) await Promise.resolve();
 }
@@ -110,11 +68,6 @@ describe('Router – navigation', () => {
     await expect(Router.go('/about')).resolves.toBeUndefined();
   });
 
-  /**
-   * API note: in memory mode `Router.props` returns path-segment params only.
-   * extras.queryParams passed to go() are overwritten by buildRoutePage().
-   * For routes without :param segments, props is always `{}`.
-   */
   it('Router.props returns {} for routes without path parameters', async () => {
     await Router.go('/search');
     expect(Router.props).toEqual({});
@@ -131,17 +84,9 @@ describe('Router – redirect route', () => {
   });
 });
 
-// ─── Route title (pipeline limitation) ───────────────────────────────────────
+// ─── Route title ─────────────────────────────────────────────────────────────
 
 describe('Router – route title', () => {
-  /**
-   * The `title` property on a route is intended to update `document.title`
-   * inside `buildRoutePage`. In the happy-dom test environment, the full
-   * component rendering pipeline (App.setPage + custom-element constructor)
-   * may not fully execute, so we assert only that document.title is a string
-   * and that the navigate itself succeeds. End-to-end title verification
-   * requires a real browser or a more complete DOM environment.
-   */
   it('go to a route with title — pathname updates; document.title is a string', async () => {
     await Router.go('/docs');
     await flush();
