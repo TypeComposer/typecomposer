@@ -1,28 +1,3 @@
-/**
- * tests/forms.test.ts
- *
- * Tests for form-related components:
- *   - TextField   (src/core/components/text-field/TextField.ts)
- *   - CheckBox    (src/core/components/check-box/CheckBox.ts)
- *   - CheckBoxGroup
- *   - SwitchPanel (src/core/components/switch-panel/SwitchPanel.ts)
- *
- * All tests use the render() helper from tests/utils.ts for DOM mounting
- * and auto-cleanup after each test.
- *
- * Implementation notes:
- *   - InputElement and LabelElement are TypeComposer custom elements registered
- *     as "tc-input-element" and "tc-label-element" respectively, not native
- *     <input>/<label>.  Assertions use tc-* tag names and component properties.
- *   - CheckBox.disabled: the constructor reads `if (props?.disabled)` — the
- *     `disabled` setter on Component (base) handles the toggle; we verify via
- *     `cb.disabled` (Component getter) not the raw inputElement.disabled.
- *   - CheckBoxGroup.onChange fires on every `change` event on any child CheckBox.
- *     Setting `cb.checked = true` directly does NOT fire a DOM change event;
- *     only `dispatchEvent(new Event('change'))` does — but the group's listener
- *     is attached to the CheckBox element (custom element), not to inputElement.
- */
-
 import { describe, it, expect, vi } from 'vitest';
 import { render } from './utils';
 import { TextField } from '../src/core/components/text-field/TextField';
@@ -44,7 +19,6 @@ describe('TextField', () => {
 
   it('inputElement is a tc-input-element (TypeComposer custom element)', () => {
     const tf = render(new TextField({}));
-    // TypeComposer wraps native input as `tc-input-element`
     expect(tf.inputElement.tagName.toLowerCase()).toBe('tc-input-element');
   });
 
@@ -87,7 +61,6 @@ describe('TextField', () => {
 
   it('appends a LabelElement child when label prop is provided', () => {
     const tf = render(new TextField({ label: 'Email' }));
-    // LabelElement registers as 'tc-label-element'
     const label = tf.querySelector('tc-label-element');
     expect(label).toBeTruthy();
   });
@@ -165,14 +138,6 @@ describe('CheckBox', () => {
     expect(cb.labelElement).toBeUndefined();
   });
 
-  /**
-   * CheckBox constructor: `if (props?.disabled) this.disabled = props.disabled`
-   * This sets `Component.disabled` (base class) but does NOT call the
-   * InputElement.disabled setter directly in the constructor.
-   * The disabled propagation is handled by Component.disabled setter via applyProps
-   * which is async — so inputElement.disabled may not be set synchronously.
-   * We assert the Component-level disabled property, not inputElement.disabled.
-   */
   it('Component-level disabled is true when disabled:true is passed', () => {
     const cb = render(new CheckBox({ disabled: true }));
     expect(cb.disabled).toBe(true);
@@ -215,8 +180,6 @@ describe('CheckBoxGroup', () => {
     const grp = render(new CheckBoxGroup(cb1));
     const received: CheckBox[] = [];
     grp.onChange = (cb) => received.push(cb);
-    // The group attaches its listener to the CheckBox element (not inputElement).
-    // Simulate a change on the CheckBox itself with checked = true first.
     cb1.checked = true;
     cb1.dispatchEvent(new Event('change', { bubbles: false }));
     expect(received.length).toBeGreaterThanOrEqual(1);
