@@ -1,20 +1,3 @@
-/**
- * tests/lifecycle.test.ts
- *
- * Tests for component lifecycle-like behaviours, reactive DOM updates, and
- * cleanup patterns:
- *
- *   - Component removal from DOM (cleanup / teardown)
- *   - Re-render by replacing a component in the tree
- *   - Reactive DOM updates: ref value change → reflected on a rendered element
- *   - RefList.syncComponentWithList driving DOM children
- *   - Ref subscriber cleanup (unsubscribe before element removal)
- *   - Multi-subscriber fan-out and selective cleanup
- *   - Component child append / re-append
- *
- * All DOM tests use the render() helper (auto-cleanup after each test).
- */
-
 import { describe, it, expect, vi } from 'vitest';
 import { render } from './utils';
 import { DivElement, SpanElement, ButtonElement, ref } from '../src';
@@ -113,7 +96,6 @@ describe('Reactive DOM updates – ref to DOM binding', () => {
     r.subscribe(handler);
     r.unsubscribe(handler);
     r.value = 'b';
-    // After unsubscribe, textContent should remain 'a' (last subscribed value)
     expect(span.textContent).toBe('a');
   });
 
