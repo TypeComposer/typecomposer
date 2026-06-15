@@ -1,4 +1,5 @@
-import { AsyncComponentLoader, Component, ElementType } from "../..";
+import { AsyncComponentLoader, ElementType } from "../..";
+import { Component } from "../../../global/index";
 
 export class LazyLoad extends Component {
   static readonly TAG: string = "tc-lazy-load";

@@ -1,7 +1,8 @@
 import safariPolyfill from "./safari-polyfill";
 safariPolyfill();
 import { EventComponent, EventHandler } from "../core/event";
-import { ElementType, computed, InputElement, ref, RefBoolean, refBoolean, RefList, RefMap, RefNumber, RefSet, RefString, refString, StyleProperties, InjectedType } from "../";
+import { ElementType, computed, InputElement, RefBoolean, refBoolean, RefList, RefMap, RefNumber, RefSet, RefString, refString, StyleProperties, InjectedType } from "../";
+import { ref } from "../core/ref/RefObject";
 
 function deepCopy<T>(obj: T, cache = new WeakMap()): T {
   // @ts-ignore

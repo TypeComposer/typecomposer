@@ -1,4 +1,5 @@
-import { BorderPanel, DivElement, IconElement, TabItem, type ElementType } from "../..";
+import { DivElement, IconElement, TabItem, type ElementType } from "../..";
+import { BorderPanel } from "../border-panel/BorderPanel";
 
 export class TabPanel extends BorderPanel {
   static readonly TAG: string = "tc-tab-panel";

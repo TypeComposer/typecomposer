@@ -1,5 +1,6 @@
-import { Component, DivElement } from "../..";
+import { DivElement } from "../..";
 import { ElementType } from "../../styles";
+import { Component } from "../../../global/index";
 
 export interface VirtualScrollProps extends ElementType {
   items: any[];

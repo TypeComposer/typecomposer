@@ -1,4 +1,5 @@
-import { Component, ElementType } from "../..";
+import { ElementType } from "../..";
+import { Component } from "../../../global/index";
 
 export class IdiomaticElement extends Component {
     static readonly TAG: string = "tc-i-element";
