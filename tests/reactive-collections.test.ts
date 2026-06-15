@@ -433,3 +433,44 @@ describe('ref() factory – collection dispatch', () => {
     expect((r as RefMap<string, number>).get('n')).toBe(42);
   });
 });
+// ─── RefObject console.log regression (audit item 1) ─────────────────────────
+
+describe('RefObject – no console.log in production', () => {
+  it('nested property mutation does NOT call console.log', () => {
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      const obj = ref({ name: 'Alice', age: 30 });
+      // mutate a nested property via the proxy setter
+      (obj.value as any).name = 'Bob';
+      (obj.value as any).age = 31;
+      expect(spy).not.toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('update() does NOT call console.log', () => {
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      const obj = ref({ count: 0 });
+      obj.update({ count: 5 });
+      expect(spy).not.toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('subscriber is still notified after property mutation without console.log', () => {
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      const obj = ref({ x: 10 });
+      let notified = false;
+      obj.listen(() => { notified = true; });
+      (obj.value as any).x = 99;
+      expect(notified).toBe(true);
+      expect(spy).not.toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});
