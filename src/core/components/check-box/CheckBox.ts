@@ -1,4 +1,5 @@
-import { Component, InputElement, LabelElement, ElementType, IconElement, ref } from "../..";
+import { InputElement, LabelElement, ElementType, IconElement, ref } from "../..";
+import { Component } from "../../../global/index";
 
 export class CheckBox extends Component {
   static readonly TAG: string = "tc-check-box";

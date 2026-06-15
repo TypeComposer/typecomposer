@@ -1,4 +1,5 @@
-import { type ElementType, Component, UListElement, ListItemElement, ref, refList } from "../..";
+import { type ElementType, UListElement, ListItemElement, ref, refList } from "../..";
+import { Component } from "../../../global/index";
 
 export class ListPanel<T = any> extends Component {
   static readonly TAG: string = "tc-list-panel";

@@ -1,5 +1,6 @@
-import { Component, DivElement, SpanElement, ElementType } from "../..";
+import { DivElement, SpanElement, ElementType } from "../..";
 import "./ToastPanel.css"
+import { Component } from "../../../global/index";
 export type ToastType = "success" | "info" | "warning" | "error";
 
 export class ToastPanel extends Component {

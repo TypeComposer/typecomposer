@@ -1,5 +1,6 @@
-import { ElementType, Component, InputElement, LabelElement, ref } from "../..";
+import { ElementType, InputElement, LabelElement, ref } from "../..";
 import "./SwitchPanel.css";
+import { Component } from "../../../global/index";
 
 export class SwitchPanel extends Component {
     static readonly TAG: string = "tc-switch-panel";

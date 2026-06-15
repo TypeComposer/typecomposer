@@ -1,4 +1,5 @@
-import { Component, ImageElement, InputElement, ElementType, ref, refString } from "../../";
+import { ImageElement, InputElement, ElementType, ref, refString } from "../../";
+import { Component } from "../../../global/index";
 
 export class AvatarPanel extends Component {
   static readonly TAG: string = "tc-avatar-panel";

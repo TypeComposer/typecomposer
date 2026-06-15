@@ -1,4 +1,5 @@
-import { Component, DivElement, ElementType } from "../..";
+import { DivElement, ElementType } from "../..";
+import { Component } from "../../../global/index";
 
 export class PopUpButton extends Component {
   static readonly TAG: string = "tc-pop-up-button";

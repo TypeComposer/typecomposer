@@ -1,4 +1,5 @@
-import { Component, ElementType, ref } from "../..";
+import { ElementType, ref } from "../..";
+import { Component } from "../../../global/index";
 
 export class ForEach extends Component {
   static readonly TAG: string = "tc-for-each";
