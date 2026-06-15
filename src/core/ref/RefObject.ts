@@ -145,9 +145,6 @@ function createObservador<T extends object>(obj: T, container: RefObjectContaine
         receiver = Reflect.set(target, key, value, receiver);
       }
       if (!isNotEmitted && !(target[key] !== null && typeof target[key] === "object" && Object.getPrototypeOf(target[key]) === Object.prototype)) {
-        console.log("RefObject: emit", {
-          key, value, target, receiver
-        });
         container.emitAll('value', this.value);
       }
       return receiver;
