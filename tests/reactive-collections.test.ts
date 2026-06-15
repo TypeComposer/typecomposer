@@ -351,15 +351,18 @@ describe('RefMap – reactivity (subscribe / listen / unsubscribe)', () => {
 // ─── RefObject ────────────────────────────────────────────────────────────────
 
 describe('RefObject (refObject)', () => {
-  it('creates a reactive object wrapper', () => {
+  it('creates a reactive object wrapper with a non-empty id string', () => {
     const obj = refObject({ name: 'Alice', age: 30 });
-    expect(obj).toBeTruthy();
-    expect(obj.id).toBeTruthy();
+    expect(typeof obj.id).toBe('string');
+    expect(obj.id.length).toBeGreaterThan(0);
+    expect(typeof obj.subscribe).toBe('function');
+    expect(typeof obj.update).toBe('function');
   });
 
-  it('value exposes the wrapped plain object', () => {
+  it('value exposes the wrapped plain object with the correct keys', () => {
     const obj = refObject({ x: 1 });
-    expect(obj.value).toBeTruthy();
+    expect(obj.value).toBeDefined();
+    expect((obj.value as any).x).toBe(1);
   });
 
   it('subscribe emits immediately', () => {
@@ -369,12 +372,17 @@ describe('RefObject (refObject)', () => {
     expect(called).toBe(true);
   });
 
-  it('update with new plain object replaces content', () => {
+  it('update with new plain object replaces content and notifies subscriber', () => {
     const obj = refObject({ a: 1 });
+    let callCount = 0;
     let lastValue: any = null;
-    obj.subscribe((v) => { lastValue = v; });
+    obj.subscribe((v) => { callCount++; lastValue = v; });
+    // subscribe fires immediately (callCount == 1)
+    const baseCalls = callCount;
     obj.update({ b: 2 });
-    expect(lastValue).toBeTruthy();
+    expect(callCount).toBeGreaterThan(baseCalls);
+    expect(lastValue).toBeDefined();
+    expect(typeof lastValue).toBe('object');
   });
 
   it('listen does not emit immediately', () => {
@@ -403,10 +411,13 @@ describe('RefObject (refObject)', () => {
     expect(calls).toBe(base);
   });
 
-  it('toJSON serializes the object value', () => {
-    const obj = refObject({ key: 'value' });
-    const json = obj.toJSON();
+  it('toJSON serializes the object value to a plain object matching the source keys', () => {
+    const obj = refObject({ key: 'value', count: 42 });
+    const json = obj.toJSON() as any;
     expect(typeof json).toBe('object');
+    expect(json).not.toBeNull();
+    expect(json.key).toBe('value');
+    expect(json.count).toBe(42);
   });
 });
 
