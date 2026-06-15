@@ -354,11 +354,6 @@ export class Component extends HTMLElement implements IComponent {
           case "html":
             element.innerHTML = propValue as string;
             break;
-          case "style":
-            for (const [styleKey, styleValue] of Object.entries(propValue as StyleProperties)) {
-              (element.style as any)[styleKey] = styleValue;
-            }
-            break;
           default:
             if (key in element && propValue) {
               try {
