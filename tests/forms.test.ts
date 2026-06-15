@@ -251,3 +251,73 @@ describe('SwitchPanel', () => {
     expect(sw.checked).toBe(false);
   });
 });
+// ─── CheckBoxGroup sibling deselection regression (audit item 2) ─────────────
+
+describe('CheckBoxGroup – sibling deselection', () => {
+  it('checking one sibling deselects the previously checked sibling', () => {
+    const cb1 = new CheckBox({ label: 'Option 1' });
+    const cb2 = new CheckBox({ label: 'Option 2' });
+    const grp = render(new CheckBoxGroup(cb1, cb2));
+
+    // Check cb1 first
+    cb1.checked = true;
+    cb1.dispatchEvent(new Event('change', { bubbles: false }));
+
+    // Now check cb2 — cb1 should become unchecked
+    cb2.checked = true;
+    cb2.dispatchEvent(new Event('change', { bubbles: false }));
+
+    expect(cb2.checked).toBe(true);
+    expect(cb1.checked).toBe(false);
+    expect(grp.selected).toBe(cb2);
+  });
+
+  it('checking three siblings leaves only the last checked as selected', () => {
+    const cb1 = new CheckBox({ label: 'A' });
+    const cb2 = new CheckBox({ label: 'B' });
+    const cb3 = new CheckBox({ label: 'C' });
+    const grp = render(new CheckBoxGroup(cb1, cb2, cb3));
+
+    cb1.checked = true;
+    cb1.dispatchEvent(new Event('change', { bubbles: false }));
+    cb2.checked = true;
+    cb2.dispatchEvent(new Event('change', { bubbles: false }));
+    cb3.checked = true;
+    cb3.dispatchEvent(new Event('change', { bubbles: false }));
+
+    expect(cb3.checked).toBe(true);
+    expect(cb2.checked).toBe(false);
+    expect(cb1.checked).toBe(false);
+    expect(grp.selected).toBe(cb3);
+  });
+
+  it('unchecking the selected item clears grp.selected', () => {
+    const cb1 = new CheckBox({ label: 'X' });
+    const grp = render(new CheckBoxGroup(cb1));
+
+    cb1.checked = true;
+    cb1.dispatchEvent(new Event('change', { bubbles: false }));
+    expect(grp.selected).toBe(cb1);
+
+    cb1.checked = false;
+    cb1.dispatchEvent(new Event('change', { bubbles: false }));
+    expect(grp.selected).toBeNull();
+  });
+
+  it('onChange fires with the correct CheckBox reference when sibling deselects', () => {
+    const cb1 = new CheckBox({ label: 'P' });
+    const cb2 = new CheckBox({ label: 'Q' });
+    const grp = render(new CheckBoxGroup(cb1, cb2));
+    const received: CheckBox[] = [];
+    grp.onChange = (cb) => received.push(cb);
+
+    cb1.checked = true;
+    cb1.dispatchEvent(new Event('change', { bubbles: false }));
+    cb2.checked = true;
+    cb2.dispatchEvent(new Event('change', { bubbles: false }));
+
+    // onChange should have fired for both checkboxes that were checked
+    expect(received.length).toBeGreaterThanOrEqual(2);
+    expect(received[received.length - 1]).toBe(cb2);
+  });
+});

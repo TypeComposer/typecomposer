@@ -96,7 +96,7 @@ export class CheckBoxGroup extends Component {
     if (checkbox.checked) {
       this._selected = checkbox;
       this.onChange(checkbox);
-      this.querySelectorAll("check-box").forEach((cb) => {
+      this.querySelectorAll(CheckBox.TAG).forEach((cb) => {
         if (cb !== checkbox) {
           (cb as CheckBox).checked = false;
         }
