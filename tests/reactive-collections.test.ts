@@ -1,24 +1,10 @@
-/**
- * tests/reactive-collections.test.ts
- *
- * Tests for reactive collection types:
- *   - RefList  (src/core/ref/RefList.ts)
- *   - RefMap   (src/core/ref/RefMap.ts)
- *   - RefObject (src/core/ref/RefObject.ts) via refObject()
- *
- * These are pure-JS reactive primitives — no DOM or component lifecycle
- * required, so no render() helper is needed.
- */
-
 import { describe, it, expect, vi } from 'vitest';
-import '../src'; // ensures TypeComposer global is registered
+import '../src';
 import { refList, RefList } from '../src/core/ref/RefList';
 import { refMap, RefMap } from '../src/core/ref/RefMap';
 import { refObject, ref } from '../src/core/ref/RefObject';
 
-// ═══════════════════════════════════════════════════════════════════════════
-// RefList
-// ═══════════════════════════════════════════════════════════════════════════
+// ─── RefList ──────────────────────────────────────────────────────────────────
 
 describe('RefList – construction', () => {
   it('creates a RefList from an array', () => {
@@ -196,7 +182,7 @@ describe('RefList – reactivity (subscribe / listen / unsubscribe)', () => {
     const beforeLen = calls.length;
     list.unsubscribe(handler);
     list.push(1, 2, 3);
-    expect(calls.length).toBe(beforeLen); // no new calls after unsubscribe
+    expect(calls.length).toBe(beforeLen);
   });
 });
 
@@ -234,9 +220,7 @@ describe('RefList – syncComponentWithList', () => {
   });
 });
 
-// ═══════════════════════════════════════════════════════════════════════════
-// RefMap
-// ═══════════════════════════════════════════════════════════════════════════
+// ─── RefMap ───────────────────────────────────────────────────────────────────
 
 describe('RefMap – construction', () => {
   it('creates an empty RefMap', () => {
@@ -364,9 +348,7 @@ describe('RefMap – reactivity (subscribe / listen / unsubscribe)', () => {
   });
 });
 
-// ═══════════════════════════════════════════════════════════════════════════
-// RefObject (via refObject())
-// ═══════════════════════════════════════════════════════════════════════════
+// ─── RefObject ────────────────────────────────────────────────────────────────
 
 describe('RefObject (refObject)', () => {
   it('creates a reactive object wrapper', () => {
@@ -428,9 +410,7 @@ describe('RefObject (refObject)', () => {
   });
 });
 
-// ═══════════════════════════════════════════════════════════════════════════
-// ref() factory (auto-dispatch)
-// ═══════════════════════════════════════════════════════════════════════════
+// ─── ref() factory ────────────────────────────────────────────────────────────
 
 describe('ref() factory – collection dispatch', () => {
   it('ref([]) creates a RefList', () => {
