@@ -20,6 +20,55 @@ function convertRefValue(value: any): any {
   return value;
 }
 
+function unwrapRefValue<T>(value: T, seen = new WeakMap<object, unknown>()): T {
+  if (value === null || value === undefined) return value;
+
+  if (value instanceof ref) {
+    return unwrapRefValue((value as { valueOf(): unknown }).valueOf(), seen) as T;
+  }
+
+  if (typeof value !== "object") return value;
+
+  if (seen.has(value)) return seen.get(value) as T;
+
+  if (Array.isArray(value)) {
+    const result: unknown[] = [];
+    seen.set(value, result);
+    for (const item of value) {
+      result.push(unwrapRefValue(item, seen));
+    }
+    return result as T;
+  }
+
+  if (value instanceof Map) {
+    const result = new Map<unknown, unknown>();
+    seen.set(value, result);
+    for (const [key, item] of value) {
+      result.set(unwrapRefValue(key, seen), unwrapRefValue(item, seen));
+    }
+    return result as T;
+  }
+
+  if (value instanceof Set) {
+    const result = new Set<unknown>();
+    seen.set(value, result);
+    for (const item of value) {
+      result.add(unwrapRefValue(item, seen));
+    }
+    return result as T;
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) return value;
+
+  const result: Record<PropertyKey, unknown> = {};
+  seen.set(value, result);
+  for (const key of Reflect.ownKeys(value)) {
+    result[key] = unwrapRefValue(Reflect.get(value, key), seen);
+  }
+  return result as T;
+}
+
 function convertObjectInObjectRefDeep(target: any) {
   if (Object.getPrototypeOf(target) === Object.prototype) {
     for (const key in target) {
@@ -67,7 +116,7 @@ class RefObjectContainer extends RefContainer {
   }
 
   valueOf() {
-    return this.instance.value;
+    return unwrapRefValue(this.value);
   }
 
   subscribeAndEmit(target: any, propertyName: any, onUnsubscribe?: any): any {
@@ -106,11 +155,7 @@ class RefObjectContainer extends RefContainer {
   }
 
   toJSON() {
-    const obj = {};
-    for (const key in this.value) {
-      obj[key] = this.value[key]?.valueOf() || this.value[key];
-    }
-    return obj;
+    return this.valueOf();
   }
 }
 

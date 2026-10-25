@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { Router } from '../src/core/router/Router';
-import { DivElement } from '../src/global/index';
+import { DivElement } from '../src';
 
 async function flush(ticks = 5) {
   for (let i = 0; i < ticks; i++) await Promise.resolve();
@@ -103,14 +103,14 @@ describe('Router – utility methods', () => {
   });
 
   it('Router.back() emits console.warn in memory mode (no throw)', () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
     expect(() => Router.back()).not.toThrow();
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('memory'));
     warnSpy.mockRestore();
   });
 
   it('Router.forward() emits console.warn in memory mode (no throw)', () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
     expect(() => Router.forward()).not.toThrow();
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('memory'));
     warnSpy.mockRestore();

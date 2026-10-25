@@ -1,5 +1,4 @@
 import { InputElement, LabelElement, refString, ElementType, InputType } from "../../";
-import "./TextField.css";
 import { Component } from "../../../global/index";
 
 

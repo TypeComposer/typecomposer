@@ -1,5 +1,4 @@
 import { type ElementType, DivElement, refString } from "../..";
-import "./BorderPanel.css";
 import { Component } from "../../../global/index";
 
 export class BorderPanel extends Component {

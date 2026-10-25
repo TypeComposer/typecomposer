@@ -17,7 +17,6 @@
     "noFallthroughCasesInSwitch": true,
     "experimentalDecorators": true,
     "noImplicitAny": false,
-    "downlevelIteration": true,
     "noEmitHelpers": true,
     "strictNullChecks": false,
     "skipLibCheck": true,

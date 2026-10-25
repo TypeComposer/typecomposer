@@ -1,5 +1,4 @@
 import { ElementType, InputElement, LabelElement, ref } from "../..";
-import "./SwitchPanel.css";
 import { Component } from "../../../global/index";
 
 export class SwitchPanel extends Component {

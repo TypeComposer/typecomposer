@@ -298,7 +298,9 @@ declare global {
     new(...args: any[]): IComponent;
   }
 
-  type ComponentType = typeof HTMLElement;
+
+
+  type ComponentType = typeof HTMLElement | IComponentConstructor;
 
   interface HTMLButtonElement extends HTMLElement {
     // @ts-ignore

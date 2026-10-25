@@ -84,6 +84,8 @@ function copyRecursiveSync(src, dest) {
 }
 
 function copyCssFiles(src, dest) {
+  fs.mkdirSync(dest, { recursive: true });
+
   fs.readdirSync(src, { withFileTypes: true }).forEach((entry) => {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
@@ -93,10 +95,27 @@ function copyCssFiles(src, dest) {
     } else if (entry.isFile() && (entry.name.endsWith('.css') || entry.name.endsWith('.css.map'))) {
       fs.mkdirSync(path.dirname(destPath), { recursive: true });
       fs.copyFileSync(srcPath, destPath);
+      if (entry.name.endsWith('.css')) {
+        addCssImportToSiblingJavascript(destPath);
+      }
     } else if (entry.isFile() && entry.name.endsWith('.scss')) {
-      execSync(`npx sass ${srcPath} ${destPath.replace('.scss', '.css')}`, { stdio: 'inherit' });
+      const cssPath = destPath.replace(/\.scss$/, '.css');
+      fs.mkdirSync(path.dirname(cssPath), { recursive: true });
+      execSync(`npx sass ${srcPath} ${cssPath}`, { stdio: 'inherit' });
+      addCssImportToSiblingJavascript(cssPath);
     }
   });
+}
+
+function addCssImportToSiblingJavascript(cssPath) {
+  const javascriptPath = cssPath.replace(/\.css$/, '.js');
+  if (!fs.existsSync(javascriptPath)) return;
+
+  const importStatement = `import "./${path.basename(cssPath)}";`;
+  const javascript = fs.readFileSync(javascriptPath, 'utf8');
+  if (javascript.split(/\r?\n/).some((line) => line.trim() === importStatement)) return;
+
+  fs.writeFileSync(javascriptPath, `${importStatement}\n${javascript}`);
 }
 
 /* Read copy.json and copy the dist folder to the specified projects */

@@ -4,8 +4,7 @@ import { EventComponent, EventHandler } from "../core/event";
 import { ElementType, computed, InputElement, ref, RefBoolean, refBoolean, RefList, RefMap, RefNumber, RefSet, RefString, refString, StyleProperties, InjectedType, SvgElement } from "../";
 
 function deepCopy<T>(obj: T, cache = new WeakMap()): T {
-  // @ts-ignore
-  if (obj instanceof ref) obj = obj.valueOf();
+  if (typeof ref === "function" && obj instanceof ref) obj = (obj as unknown as ref).valueOf() as T;
   if (obj === null || typeof obj !== "object") return obj;
   if (cache.has(obj)) return cache.get(obj);
   if (obj instanceof Node) return obj;
@@ -227,7 +226,7 @@ const TypeComposer = {
         if (child instanceof Function) {
           child = child();
         }
-        if (child instanceof ref) {
+        if (typeof ref === "function" && child instanceof ref) {
           // @ts-ignore
           parent.append(child);
         } else if (Array.isArray(child)) {
@@ -358,7 +357,7 @@ export class Component extends HTMLElement implements IComponent {
           return typeof value === "function" ? value.bind(target) : value;
         },
         set(target, property: string, value: any) {
-          if (value instanceof ref) {
+          if (typeof ref === "function" && value instanceof ref) {
             // @ts-ignore
             value.subscribe(target, property);
           } else {
@@ -612,7 +611,7 @@ function componentInjectionValue<ElementPrototype>(prototype: ElementPrototype) 
   if (!original) return;
   Object.defineProperty(prototype, "value", {
     set: function (value: refString) {
-      if (value instanceof ref) {
+      if (typeof ref === "function" && value instanceof ref) {
         // @ts-ignore
         const onInput = () => (value.value = this.value);
         this.addEventListener("input", onInput);
@@ -629,7 +628,7 @@ function componentInjectionChecked<ElementPrototype>(prototype: ElementPrototype
   if (!original) return;
   Object.defineProperty(prototype, "checked", {
     set: function (value: refBoolean) {
-      if (value instanceof ref) {
+      if (typeof ref === "function" && value instanceof ref) {
         const onInput = () => (value.value = this.checked);
         this.addEventListener("input", onInput);
         this.subscribe(this, "checked", () => this.removeEventListener("input", onInput));
@@ -646,7 +645,7 @@ function componentInjectionDisabled<ElementPrototype>(prototype: ElementPrototyp
       return this.hasAttribute("disabled");
     },
     set: function (value: refBoolean) {
-      if (value instanceof ref) value.subscribe(this, "disabled");
+      if (typeof ref === "function" && value instanceof ref) value.subscribe(this, "disabled");
       else {
         if (value) this.setAttribute("disabled", "");
         else this.removeAttribute("disabled");
@@ -661,7 +660,7 @@ function componentInjectionHidden<ElementPrototype>(prototype: ElementPrototype)
       return this.hasAttribute("hidden");
     },
     set: function (value: refBoolean) {
-      if (value instanceof ref) value.subscribe(this, "hidden");
+      if (typeof ref === "function" && value instanceof ref) value.subscribe(this, "hidden");
       else {
         if (value) this.setAttribute("hidden", "");
         else this.removeAttribute("hidden");
@@ -691,7 +690,7 @@ function componentInjectionVariableController<ElementPrototype>(prototype: Eleme
   if (!isWritable(original)) return;
   Object.defineProperty(prototype, propertyName, {
     set: function (value: any) {
-      if (value instanceof ref) {
+      if (typeof ref === "function" && value instanceof ref) {
         (value as ref).subscribe(this, propertyName?.toString());
       } else original.set.call(this, value?.valueOf());
     },
@@ -728,7 +727,7 @@ Object.defineProperty(Element.prototype, "variant", {
   },
   set: function (v: "default" | string) {
     // @ts-ignore
-    if (v instanceof ref) {
+    if (typeof ref === "function" && v instanceof ref) {
       // @ts-ignore
       v.subscribe(this, "variant");
     } else {
@@ -1003,10 +1002,10 @@ Element.prototype.append = function (...nodes: (Node | string | ref)[]) {
   for (const node of nodes) {
     onCreateConnected(node, this);
   }
-  const isRef = nodes.find((node) => node instanceof ref);
+  const isRef = nodes.find((node) => typeof ref === "function" && node instanceof ref);
   if (isRef) {
     for (const n of nodes) {
-      if (n instanceof ref) {
+      if (typeof ref === "function" && n instanceof ref) {
         const r: ref<HTMLElement[]> = n as ref<HTMLElement[]>;
         const start = new Comment(`ref:${r.id}:start`);
         const end = new Comment(`ref:${r.id}:end`);
@@ -1139,7 +1138,7 @@ Object.defineProperty(Element.prototype, "className", {
     return originalClassName?.get?.call(this);
   },
   set: function (value: string | ref<string>) {
-    if (value instanceof ref) {
+    if (typeof ref === "function" && value instanceof ref) {
       value.subscribe(this, "className");
     } else {
       originalClassName?.set?.call(this, value);

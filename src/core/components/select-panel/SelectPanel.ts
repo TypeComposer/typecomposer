@@ -1,6 +1,5 @@
 
 import { type ElementType, DivElement, InputElement, LabelElement, ref, refList, UListElement } from "../..";
-import "./SelectPanel.css";
 import { Component } from "../../../global/index";
 import { ListItemElement } from "../../element/listitem/ListItemElement";
 export class SelectItemPanel extends ListItemElement {

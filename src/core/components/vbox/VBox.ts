@@ -1,5 +1,4 @@
 import { type ElementType } from "../..";
-import "./VBox.css";
 import { Component } from "../../../global/index";
 export class VBox extends Component {
   static readonly TAG: string = "tc-vbox";

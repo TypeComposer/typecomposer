@@ -1,4 +1,4 @@
-import { RouteView, AsyncComponentLoader, ref, refObject } from "../../";
+import { RouteView, AsyncComponentLoader, ref, refObject, ElementType } from "../../";
 import { App, DivElement } from "../../";
 import { RouterGuard, RouterGuardType } from "./RouterGuard";
 
@@ -38,7 +38,7 @@ type NavigationExtras = {
 
 export type ResourceData = { [key: string]: any } | ((params: Params) => { [key: string]: any } | Promise<{ [key: string]: any }>);
 
-export interface RoutePage {
+export interface RoutePage<T = any> {
   path: string;
   extras?: { queryParamsHandling?: QueryParamsHandling, queryParams?: Params };
   // props?: Params;
@@ -46,11 +46,12 @@ export interface RoutePage {
   children?: RoutePage[];
   redirect?: string;
   title?: string;
+  props?: ElementType<T>;
   resource?: ResourceData;
   guard?: RouterGuard | RouterGuardType
 }
 
-interface RoutePageBuild extends RoutePage {
+interface RoutePageBuild extends RoutePage<any> {
   parent: RoutePageBuild;
   build: IComponent;
   routeView: RouteView | undefined;
@@ -364,7 +365,7 @@ export class Router {
 
   static create(data: {
     routes: RoutePage[];
-    pageNotFound?: ComponentType;
+    pageNotFound?: ComponentType
     history?: RouterHistoryMode;
     sitemaps?: { baseUrl: string };
     robots?: "auto" | { [key: string]: any };

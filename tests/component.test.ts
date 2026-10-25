@@ -26,4 +26,6 @@ describe('TypeComposer Component Rendering', () => {
     expect(span.style.fontWeight).toBe('bold');
     expect(document.body.contains(span)).toBe(true);
   });
+
+
 });
