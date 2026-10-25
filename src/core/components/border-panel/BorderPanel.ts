@@ -1,5 +1,6 @@
-import { type ElementType, DivElement, Component, refString } from "../..";
+import { type ElementType, DivElement, refString } from "../..";
 import "./BorderPanel.css";
+import { Component } from "../../../global/index";
 
 export class BorderPanel extends Component {
   static readonly TAG: string = "tc-border-panel";

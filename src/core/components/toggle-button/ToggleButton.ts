@@ -1,4 +1,5 @@
-import { ElementType, Component } from "../..";
+import { ElementType } from "../..";
+import { Component } from "../../../global/index";
 
 export class ToggleButton extends Component {
   static readonly TAG: string = "tc-toggle-button";

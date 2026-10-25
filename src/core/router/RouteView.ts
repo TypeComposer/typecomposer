@@ -1,5 +1,6 @@
-import { Component, Router, ElementType } from "../..";
+import { Router, ElementType } from "../..";
 import { RoutePage } from "./Router";
+import { Component } from "../../global/index";
 
 interface RoutePageBuild extends RoutePage {
   parent: RoutePageBuild;

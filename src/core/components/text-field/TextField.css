@@ -1,0 +1,31 @@
+[tc-style~=tc-text-field] {
+  display: flex;
+  flex-direction: column;
+  color: var(--text-color);
+}
+[tc-style~=tc-text-field] .aria-Input,
+[tc-style~=tc-text-field] .aria-TextArea {
+  padding: 0.25025rem;
+  margin: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--field-background);
+  font-size: 1.000125rem;
+  color: var(--field-text-color);
+}
+[tc-style~=tc-text-field] .aria-Input:focus,
+[tc-style~=tc-text-field] .aria-TextArea:focus {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: -1px;
+}
+[tc-style~=tc-text-field] .aria-Input[data-invalid],
+[tc-style~=tc-text-field] .aria-TextArea[data-invalid] {
+  border-color: var(--invalid-color);
+}
+[tc-style~=tc-text-field] .aria-FieldError {
+  font-size: 12px;
+  color: var(--invalid-color);
+}
+[tc-style~=tc-text-field] [slot=description] {
+  font-size: 12px;
+}

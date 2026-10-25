@@ -1,4 +1,5 @@
-import { Component, type ElementType } from "../..";
+import { type ElementType } from "../..";
+import { Component } from "../../../global/index";
 
 export type FlowType = "flow-1" | "flow-2" | "flow-3" | "flow-4" | "flow-5" | "flow-6" | "flow-7" | "flow-8" | "flow-9" | "flow-10" | "flow-11" | "flow-12";
 

@@ -1,4 +1,5 @@
-import { Component, ElementType, DialogElement } from "../..";
+import { Component, ElementType } from "../..";
+import { DialogElement } from "../../element/dialog/DialogElement";
 
 export class DialogPanel extends DialogElement implements IComponent {
   static readonly TAG: string = "tc-dialog-panel";

@@ -1,4 +1,5 @@
-import { type ElementType, Component, DivElement } from "../..";
+import { type ElementType, DivElement } from "../..";
+import { Component } from "../../../global/index";
 
 export class ScrollPanel extends Component {
   static readonly TAG: string = "tc-scroll-panel";

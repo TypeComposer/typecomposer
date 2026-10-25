@@ -1,4 +1,5 @@
-import { Component, ElementType, ref, refString } from "../..";
+import { ElementType, ref, refString } from "../..";
+import { Component } from "../../../global/index";
 
 export class IconElement extends Component {
   static readonly TAG: string = "tc-icon-element";

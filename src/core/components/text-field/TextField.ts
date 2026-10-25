@@ -1,12 +1,6 @@
-import {
-  Component,
-  InputElement,
-  LabelElement,
-  refString,
-  ElementType,
-  InputType,
-} from "../../";
+import { InputElement, LabelElement, refString, ElementType, InputType } from "../../";
 import "./TextField.css";
+import { Component } from "../../../global/index";
 
 
 export class TextField extends Component {

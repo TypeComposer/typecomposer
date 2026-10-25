@@ -1,4 +1,5 @@
-import { ElementType, Component, InputElement } from "../..";
+import { ElementType, InputElement } from "../..";
+import { Component } from "../../../global/index";
 
 export class ColorPicker extends Component {
   static readonly TAG: string = "tc-color-picker";
