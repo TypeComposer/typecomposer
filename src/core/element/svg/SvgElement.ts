@@ -52,6 +52,7 @@ const applySvg = (svg: SVGElement, src: string | undefined, svgText: string): bo
 };
 
 const SvgBaseElement: SvgConstructor = function (props?: ElementType & { src?: string }) {
+	props = props || {};
 	if (props?.src && props.src.includes("<svg") && props.src.includes("</svg>")) {
 		const div = new DivElement();
 		div.innerHTML = props.src;
@@ -133,7 +134,7 @@ const SvgBaseElement: SvgConstructor = function (props?: ElementType & { src?: s
 	});
 	// @ts-ignore
 	Component.applyProps(svg, props);
-	svg.src = props.src;
+	svg.src = props?.src;
 	Object.defineProperty(svg, "__observer__", {
 		value: observer,
 		writable: false,

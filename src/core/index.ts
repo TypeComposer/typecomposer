@@ -1,4 +1,5 @@
 export * from "../global";
+export * from "./service";
 export * from "./styles";
 export * from "./decorators";
 export * from "./element";

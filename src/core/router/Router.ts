@@ -408,6 +408,21 @@ export class Router {
     if (!url) return;
     if (!url.startsWith("/")) url = "/" + url;
     const newUrl = Router.buildURL(url, extras?.queryParams || {});
+    // Prevent redundant navigation when target URL is identical to current
+    const currentUrlFull = (() => {
+      const mode = Router.#router.#history;
+      if (mode === "history") {
+        return (window.location.pathname || "/") + (window.location.search || "");
+      }
+      if (mode === "hash") {
+        return (window.location.hash || "").replace(/^#/, "");
+      }
+      // memory/static/abstract: reconstruct from internal state
+      return Router.buildURL(Router.#router.url || "/", Router.#router.#props || {});
+    })();
+    if (newUrl === currentUrlFull) {
+      return; // No-op: already at the same route with identical URL
+    }
     // Handle different routing modes
     if (Router.#router.#history === "history") {
       history.pushState(extras?.queryParams || {}, "", newUrl);

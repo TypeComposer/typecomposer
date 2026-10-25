@@ -1,7 +1,7 @@
 import safariPolyfill from "./safari-polyfill";
 safariPolyfill();
 import { EventComponent, EventHandler } from "../core/event";
-import { ElementType, computed, InputElement, ref, RefBoolean, refBoolean, RefList, RefMap, RefNumber, RefSet, RefString, refString, StyleProperties, InjectedType } from "../";
+import { ElementType, computed, InputElement, ref, RefBoolean, refBoolean, RefList, RefMap, RefNumber, RefSet, RefString, refString, StyleProperties, InjectedType, SvgElement } from "../";
 
 function deepCopy<T>(obj: T, cache = new WeakMap()): T {
   // @ts-ignore
@@ -112,6 +112,57 @@ const controllerUniqueId = {
   counter: 0,
 }
 
+function normalizePropsKeys(tag: string, props: { [key: string]: any }): { [key: string]: any } {
+  if (tag != 'svg' && tag !== 'math' && tag !== 'path') return props;
+  const normalizedProps: { [key: string]: any } = {};
+  for (const [key, value] of Object.entries(props)) {
+    if (key === "className") {
+      normalizedProps["class"] = value;
+    } else if (key === "htmlFor") {
+      normalizedProps["for"] = value;
+    } else {
+      if (key.includes("-")) {
+        const camelCaseKey = key.replace(/-([a-zA-Z])/g, (_, char) => char.toUpperCase());
+        normalizedProps[camelCaseKey] = value
+      } else
+        normalizedProps[key] = value;
+    }
+  }
+  return normalizedProps;
+}
+
+function isSvgElement(tag: string): boolean {
+  switch (tag) {
+    case "svg":
+    case "math":
+    case "path":
+      return true;
+    default:
+      return false;
+  }
+}
+
+function createElementTag(tag: string, props?: { [key: string]: any }): HTMLElement {
+  if (!isSvgElement(tag)) return document.createElement(tag);
+  let element: HTMLElement;
+  if (tag === "svg") element = new SvgElement(props) as unknown as HTMLElement;
+  if (tag === "math") element = document.createElementNS("http://www.w3.org/1998/Math/MathML", "math") as unknown as HTMLElement;
+  if (tag === "path") {
+    console.warn("The 'path' tag is not supported as a direct element. Returning an empty SVG element instead.");
+    element = document.createElementNS("http://www.w3.org/2000/svg", "path") as unknown as HTMLElement;
+  }
+  for (const [key, value] of Object.entries(props || {})) {
+    if (key === "style") {
+      for (const [styleKey, styleValue] of Object.entries(value)) {
+        element.style.setProperty(styleKey, styleValue as any);
+      }
+    } else {
+      element.setAttribute(key, value as any);
+    }
+  }
+  return element;
+}
+
 const TypeComposer = {
   defineElement(name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions): void {
     if (customElements.get(name)) {
@@ -121,6 +172,7 @@ const TypeComposer = {
     customElements.define(name, constructor, options);
   },
   createElement: (tag: any, props: any, ...children: any[]): any => {
+    props = normalizePropsKeys(tag, props || {});
     children = children.filter((c) => c !== null && c !== undefined && c !== false && c !== true);
     const isComponent = tag?.prototype instanceof Node;
     const parentElement = props?.[TypeComposer.parentComponentSymbol];
@@ -141,6 +193,7 @@ const TypeComposer = {
         }
         return fragment;
       }
+      const isSvg = isSvgElement(tag);
       const key: { key: string; controller: { getCache: (key: string) => any; setCache: (key: string, value: any) => void } } = props?.key;
       const isValideKey = key && typeof key === "object" && key["controller"] && key["controller"]["getCache"] && key["controller"]["setCache"];
       if (isValideKey) {
@@ -152,19 +205,21 @@ const TypeComposer = {
       const refKey = props?.ref;
       const className = props?.className || props?.class;
 
-      delete props?.className;
-      delete props?.class;
+      if (!isSvg) {
+        delete props?.className;
+        delete props?.class;
+      }
       delete props?.onInit;
       delete props?.ref;
       delete props?.key;
       delete props?.visible;
       if (style) props.style = {};
       const ElementType: { [key: string]: any } = props || {};
-      const el = isComponent ? new tag(ElementType) : document.createElement(tag);
+      const el = isComponent ? new tag(ElementType) : createElementTag(tag, props);
       el[parentComponentSymbol] = parentElement;
       if (isValideKey) key.controller.setCache(key.key, el);
       if (style) el.setStyle(style);
-      if (className) el.className = className;
+      if (className && !isSvg) el.className = className;
       if (refKey) refKey(el);
       Component.applyProps(el, ElementType);
       const appendChild = (parent: Element, child: any) => {
@@ -953,7 +1008,6 @@ Element.prototype.append = function (...nodes: (Node | string | ref)[]) {
   for (const node of nodes) {
     onCreateConnected(node, this);
   }
-  // console.log("append", nodes);
   const isRef = nodes.find((node) => node instanceof ref);
   if (isRef) {
     for (const n of nodes) {
@@ -1090,7 +1144,6 @@ Object.defineProperty(Element.prototype, "className", {
     return originalClassName?.get?.call(this);
   },
   set: function (value: string | ref<string>) {
-    console.log("set className", value);
     if (value instanceof ref) {
       value.subscribe(this, "className");
     } else {
